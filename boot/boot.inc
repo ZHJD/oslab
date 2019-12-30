@@ -9,10 +9,10 @@ DESC_L   	        equ   0_0_0000_0000_0000_0000_0000b    ; L为0表示32bit的�
 DESC_AVL 	        equ    0__0000_0000_0000_0000_0000b    ; CPU不使用这个bit故设置为0
 DESC_LIMIT_CODE2    equ       1111_0000_0000_0000_0000b    ; 段界限的第二个字段
 DESC_LIMIT_DATA2    equ     DESC_LIMIT_CODE2
-;DESC_LIMIT_VEDIO2  equ       0000_0000_0000_0000_0000b    ; 定义显存段    
+DESC_LIMIT_VIDEO2   equ       0000_0000_0000_0000_0000b    ; 定义显存段    
 DESC_P              equ           1_000_0000_0000_0000b    ; 段是否在内存中
 DESC_DPL_0          equ            00_0_0000_0000_0000b    ; 特权级0
-DESC_DPL_!          equ            01_0_0000_0000_0000b    ; 特权级1
+DESC_DPL_1          equ            01_0_0000_0000_0000b    ; 特权级1
 DESC_DPL_2          equ            10_0_0000_0000_0000b    ; 特权级2
 DESC_DPL_3          equ            11_0_0000_0000_0000b    ; 特权级3
 DESC_S_CODE         equ               1_0000_0000_0000b    ; s为1表示非系统段
@@ -35,9 +35,9 @@ DESC_DATA_HIGH4     equ                 (0x00 << 24) + DESC_G_4K + DESC_D_32 + \
 DESC_VIDEO_HIGH4    equ                 (0x00<<24) + DESC_G_4K + DESC_D_32 + \
 										DESC_L + DESC_AVL + DESC_LIMIT_VIDEO2 + DESC_P + \
 										DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x00
----------------------选择子属性------------------------------------
+;---------------------选择子属性------------------------------------
 RPL0         equ         00b
-RPL!		 equ         01b
+RPL1		 equ         01b
 RPL2         equ         10b
 RPL3         equ         11b   ;RPL 表示请求特权级
 
