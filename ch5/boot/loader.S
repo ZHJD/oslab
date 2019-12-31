@@ -1,7 +1,6 @@
 %include "boot.inc"
 section loader vstart=LOADER_BASE_ADDR
 LOADER_STACK_TOP equ LOADER_BASE_ADDR                       ;设置栈顶
-jmp loader_start
 
 ;-------------------------构建gdt的内部描述符--------------------------
 GDT_BASE:             dd    0x0000_0000              ;gdt的第0个位置不能使用，所以全部填充0
@@ -21,6 +20,9 @@ GDT_SIZE              equ  $ - GDT_BASE              ; '$'代表当前行的地�
 GDT_LIMIT             equ  GDT_SIZE - 1
 times 60 dq 0                                        ;times是伪指令，dq -- define quad word 64位，为后面留空间
 
+;存放可用内存容量，此处偏移地址为0x200
+total_mem_bytes       dd   0
+
 ;----------------以下是段选择子--------------------------------------------------------------
 ;------ 段选择子共16位，第0和1位是请求特权级
 ;------ 第2位用于区分是lgt还是gdt------------------------------------------------------------
@@ -34,32 +36,97 @@ SECTION_CODE          equ               (0x001<<3) + T1_GDT + RPL0  ;代码段�
 gdt_ptr:              dw                GDT_LIMIT
 					  dd				GDT_BASE
 
-loadermsg             db                '2 loader is real.'
-loader_size           equ               $ - loadermsg
+;设置ards缓冲区
+ards_buf times 244 db  0
+ards_nr               dw                0 ; 用于记录ARDS结构体数量
 
 ;--------------------------------------------------------------------------------------------
 
 loader_start:
+
+;--------------------e820获取内存大小------------------------------------
+	xor  ebx,  ebx ;第一次调用时，ebx直要为0
+	mov  edx,  0x534d4150 ; edx只赋值一次，循环体中不会改变
+	mov  di,   ards_buf   ;ards结构体缓冲区
+
+.e820_mem_get_loop:
+	mov  ecx,  20  ;ARDS地址范围描述符结构大小是20字节
+	int  0x15      
+	jc   .e820_failed_so_try_e801  ;cf位为1则有错误发生，尝试0xe801子功能
+	add  di,  cx
+	inc  word [ards_nr]  ;记录ards数量
+	cmp  ebx, 0 ; 若ebx为0且cf为1，则ards全部返回
+	jnz  .e820_mem_get_loop
+
+; 在所有的ards结构中，找出(base_add_low + length_low)的最大值，即内存的容量
+	mov  cx, [ards_nr]
+; 遍历所有的ards结构体
+	mov  ebx, ards_buf
+	xor  edx, edx     ;edx存储最大内存容量
+.find_max_mem:  ;无需检查type类型
+	mov  eax, [ebx]      ;base_low 32 bit
+	add  eax, [ebx + 8]  ;内存长度的低32bit，字节为单位
+	add  ebx, 20         ;指向缓冲区的下一个结构体
+	cmp  edx, eax
+	jge  .next_ards
+	mov  edx, eax
+.next_ards:
+	loop .find_max_mem
+
+	jmp  mem_get_ok
+
+;----------------------------------------------------------------------------------------
+; 使用e801获取最大内存大小
+.e820_mem_get_loop:
+	mov ax,  0xe801
+	xor edx, edx   ;edx表示最大内存大小，提前清0
+	int 0x15
+	jc  .e801_failed_so_try_88
+	
+	; 先处理15MB以下的内存容量，单位是1KB
+	mov cx, 0x400   ;0x400b = 1kb
+	mul cx          ;ax 是被乘数，结果的低16bit在ax中，高16bit在dx中
+	shl edx, 16     ;左移低位补0
+	and eax, 0x0000_ffff
+	or  edx, eax;   ;eax的高16位是0，低16bit是运算结果，edx的低16bit是0
+	add edx，0x00100000  ; 结果要加上1MB
+	mov esi, edx         ;备份edx
+
+	; 处理16MB～4GB，此处单位是64KB
+	mov eax, 0x00010000  ; 0x00010000表示64kb
+	and ebx, 0x0000_ffff
+	mul ebx               ; 低32bit在eax中，高32bit在edx中，
+						 ; 由于乘积小于4GB,因此高位edx为0
+	add eax, esi         ; 和16MB相加
+	mov edx, eax
+	jmp .mem_get_ok
 ;--------------------------------------------------------------------------------------------
-;INT  0x10          功能号:  0x13        功能描述:打印字符串
-;--------------------------------------------------------------------------------------------
-;输入
-;AH 子功能号 13h
-;BH 页码
-;BL = 属性
-;CX = 字符串长度
-;(DH,DL) = 坐标(行，列)
-;ES:BF = 字符串起始地址
-;AL 显示输出方式
-;无返回值
-;-------------------------------------------------------------------------------------------
-	mov  sp,  LOADER_BASE_ADDR
-	mov  bp,  loadermsg            ;ES:BP 字符串首地址,es在mbr中已经初始化为0
-	mov  cx,  loader_size          ;cx字符串长度
-	mov  ax,  0x1301               ;AH = 13, Al = 01
-	mov  bx,  0x001f               ;页蒿为0
-	mov  dx,  0x1800               
-	int  0x10                      ;10h号中断
+; 使用0x88获取内存大小，最多获取64MB内存
+.e801_failed_so_try_88:
+	mov ah, 0x88
+	int 0x15
+	jc  .error_hit
+	and eax, 0x0000_ffff
+	mov cx, 0x400   ; 单位是4KB
+	mul cx
+	shl edx, 16
+	or  edx, eax
+	add edx, 0x100000 ;加上1MB
+
+.mem_get_ok:
+	mov [total_mem_bytes], edx
+.error_hit:
+	error_msg db  'get memory failed!'
+	msg_size  equ  $ - error_msg
+	
+	mov cx, msg_size
+	mov bx, error_msg
+	mov dx, 320       ;第三行输出错误消息
+	mov byte [gs:dx], [bx]
+	mov byte [gs:dx + 1], 0xA4
+	inc bx  ; 指向下一个字符
+	add dx, 2
+	loop .error_hit
 
 ;------------------------------------------------------------------------------------------
 ; 打开A20
