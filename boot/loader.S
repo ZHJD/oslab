@@ -54,8 +54,7 @@ loader_start:
 ;无返回值
 ;-------------------------------------------------------------------------------------------
 	mov  sp,  LOADER_BASE_ADDR
-	mov  es,  sp
-	mov  bp,  loadermsg            ;ES:BP 字符串首地址
+	mov  bp,  loadermsg            ;ES:BP 字符串首地址,es在mbr中已经初始化为0
 	mov  cx,  loader_size          ;cx字符串长度
 	mov  ax,  0x1301               ;AH = 13, Al = 01
 	mov  bx,  0x001f               ;页蒿为0
@@ -97,8 +96,8 @@ p_mode_start:
 	mov gs,    ax
 
 
-	mov byte  [gs:160],  'P'
-
+	mov byte  [gs:160],  'P'  ;一行有80个字符，显示一个字符占2个字节，此处显示在第二行第一个位置
+	mov byte  [gs:161],  0xa4
 	jmp $
 
 

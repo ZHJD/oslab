@@ -1,6 +1,6 @@
 ; ---------------------------------loader 和 kernl----------------------------------
 LOADER_BASE_ADDR equ    0x900
-LOADER_START_SECTOR equ 0x2
+LOADER_START_SECTOR equ 0x1
 
 ;-------------------全局描述符段表属性----------------------------------------------
 DESC_G_4K 	    	equ 1_000_0000_0000_0000_0000_0000b    ; 段界限的单位设置为4KB
@@ -34,7 +34,7 @@ DESC_DATA_HIGH4     equ                 (0x00 << 24) + DESC_G_4K + DESC_D_32 + \
 
 DESC_VIDEO_HIGH4    equ                 (0x00<<24) + DESC_G_4K + DESC_D_32 + \
 										DESC_L + DESC_AVL + DESC_LIMIT_VIDEO2 + DESC_P + \
-										DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x00
+										DESC_DPL_0 + DESC_S_DATA + DESC_TYPE_DATA + 0x0b
 ;---------------------选择子属性------------------------------------
 RPL0         equ         00b
 RPL1		 equ         01b

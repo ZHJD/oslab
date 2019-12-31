@@ -1,11 +1,11 @@
 config_interface: textconfig
 #display_library: sdl
 
-romimage: file=/home/zhj/oslab/bochs/share/bochs/BIOS-bochs-latest
+romimage: file=/home/zhj/oslab/oslab/share/bochs/BIOS-bochs-latest
 
 megs: 32
 
-vgaromimage: file=/home/zhj/oslab/bochs/share/bochs/VGABIOS-lgpl-latest 
+vgaromimage: file=/home/zhj/oslab/oslab/share/bochs/VGABIOS-lgpl-latest 
 
 #floppya: 1_44=/dev/fd0, status=inserted
 # disk
