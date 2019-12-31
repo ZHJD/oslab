@@ -37,12 +37,15 @@ gdt_ptr:              dw                GDT_LIMIT
 					  dd				GDT_BASE
 
 ;设置ards缓冲区
-ards_buf times 244 db  0
+ards_buf times 224 db  0
 ards_nr               dw                0 ; 用于记录ARDS结构体数量
 
-;--------------------------------------------------------------------------------------------
+; 错误提示消息
+error_msg             db  'get memory failed!  '      
+msg_size              equ  $ - error_msg
 
-loader_start:
+;此处偏移开始0x300
+;--------------------------------------------------------------------------------------------
 
 ;--------------------e820获取内存大小------------------------------------
 	xor  ebx,  ebx ;第一次调用时，ebx直要为0
@@ -73,11 +76,11 @@ loader_start:
 .next_ards:
 	loop .find_max_mem
 
-	jmp  mem_get_ok
+	jmp .mem_get_ok
 
 ;----------------------------------------------------------------------------------------
 ; 使用e801获取最大内存大小
-.e820_mem_get_loop:
+.e820_failed_so_try_e801:
 	mov ax,  0xe801
 	xor edx, edx   ;edx表示最大内存大小，提前清0
 	int 0x15
@@ -89,7 +92,7 @@ loader_start:
 	shl edx, 16     ;左移低位补0
 	and eax, 0x0000_ffff
 	or  edx, eax;   ;eax的高16位是0，低16bit是运算结果，edx的低16bit是0
-	add edx，0x00100000  ; 结果要加上1MB
+	add edx, 0x10_0000  ; 结果要加上1MB
 	mov esi, edx         ;备份edx
 
 	; 处理16MB～4GB，此处单位是64KB
@@ -113,20 +116,31 @@ loader_start:
 	or  edx, eax
 	add edx, 0x100000 ;加上1MB
 
-.mem_get_ok:
-	mov [total_mem_bytes], edx
-.error_hit:
-	error_msg db  'get memory failed!'
-	msg_size  equ  $ - error_msg
-	
+;------------------------------------------------------------------------------------------------
+;处理失败的代码要放在前面，不然获取内存成功后也会执行这段代码
 	mov cx, msg_size
 	mov bx, error_msg
 	mov dx, 320       ;第三行输出错误消息
-	mov byte [gs:dx], [bx]
-	mov byte [gs:dx + 1], 0xA4
-	inc bx  ; 指向下一个字符
+	mov ax, 0xb800
+	mov es, ax
+
+.error_hit:
+	mov al, [bx]
+	mov di, bx  ;备份bx
+	mov bx, dx
+	mov [es:bx], al
+	mov bx, di ; 恢复bx
 	add dx, 2
+	inc bx  ; 指向下一个字符x
 	loop .error_hit
+	jmp $              ; 出错，进行死循环
+;-----------------------------------------------------------------------------------------------
+.mem_get_ok:
+	mov [total_mem_bytes], edx
+
+
+;-----------------------------------------------------------------------------------------	
+
 
 ;------------------------------------------------------------------------------------------
 ; 打开A20
@@ -150,7 +164,7 @@ loader_start:
 
 
 	jmp dword SECTION_CODE: p_mode_start ; 刷新流水线
-
+    ; 并更新段缓冲寄存器
 
 [bits 32]
 p_mode_start:
