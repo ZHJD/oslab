@@ -53,4 +53,4 @@ PG_P	  equ     1b
 PG_RW_R   equ     0_0b ; 可读u不可写
 PG_RW_W   equ     10b  ; 可读可写
 PG_US_S   equ     000b ; user/superuser 位,若为1，则表示处于user级别，若为0，表示处于superuser级别
-PG_US_S   equ     100b
+PG_US_U   equ     100b
