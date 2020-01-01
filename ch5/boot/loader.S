@@ -54,6 +54,7 @@ msg_size              equ  $ - error_msg
 
 .e820_mem_get_loop:
 	mov  ecx,  20  ;ARDS地址范围描述符结构大小是20字节
+	mov  eax,  0xe820 ; 执行中断后，eax变为0x534d4150
 	int  0x15      
 	jc   .e820_failed_so_try_e801  ;cf位为1则有错误发生，尝试0xe801子功能
 	add  di,  cx
@@ -179,8 +180,87 @@ p_mode_start:
 
 	mov byte  [gs:160],  'P'  ;一行有80个字符，显示一个字符占2个字节，此处显示在第二行第一个位置
 	mov byte  [gs:161],  0xa4
-	jmp $
+
+;-------------------------------------启用分页机制-------------------------------------------------
+; 创建页目录及页表并初始化页内存位置
+call setup_page
+
+; 把描述符表地址及偏移梁写入到内存gdt_ptr处，之后重新加载
+sgdt [gdt_ptr]
+; [gdt_ptr]共6字节，前2字节存储gdt表长度，后四字节存储gdt表基地址
+
+; 把显存段的段基址放在内核空间中
+mov ebx, [gdt_ptr + 2]
+or dword [ebx + 0x18 + 4], 0xc000_0000  ; 显存段位于第三段，表中每项8字节
+
+; 把gdt基址加上0xc000_0000，使其成为内核地址
+add dword [gdt_ptr + 2], 0xc000_0000
+add esp, 0xc000_0000 ; 把栈指针移到内核中
+
+; 把页目录地址赋给cr3
+mov eax, PAGE_DIR_TABLE_POS
+mov cr3, eax                ; 存放的是页目标表的物理地址，不需要再做变换
+
+; 打开cr0的PG位， 位于cr0的第32位
+mov eax, cr0
+or  eax, 0x8000_0000
+mov cr0, eax
+
+; 开启分页后，用gdt新的地址重新加载
+lgdt [gdt_ptr] ; 必须在开启分页后再重新加载，因为此时的段描述符表中的地址是虚地址
+
+mov byte [gs:480], 'V'
+jmp $
+
+;-----------------------创建页目录及页表--------------------------------------------------------
+setup_page:
+; 把页目录所使用的空间全部清0
+	mov ecx, 4096  ; 二级页目录项总共占4k,即4096B
+	mov esi, 0;
+.clear_byte:
+	mov byte [PAGE_DIR_TABLE_POS + esi], 0
+	inc esi
+	loop .clear_byte
+
+; 开始创建页目录项(PDE) page directory entry
+.create_pde:
+	mov eax, PAGE_DIR_TABLE_POS
+	add eax, 4096 ; eax 直是第一个页表的物理地址
+	mov ebx, eax
 
 
+	or eax, PG_US_U | PG_RW_W | PG_P
+
+	mov [PAGE_DIR_TABLE_POS + 0x0], eax    ; 确保使用分页机制前的物理地址和使用分页机制后虚拟地址
+										   ; 对应的物理地址相同
+
+	mov [PAGE_DIR_TABLE_POS + 0xc00], eax  ; 把高1GB虚拟地址映射到低端1MB处
+
+	sub eax, 4096
+	mov [PAGE_DIR_TABLE_POS + 4092], eax
+
+; 创建页表项(PTE)
+	mov ecx, 256         ; 1M低端内存 / 每页大小4K = 256
+						 ; 1M的内核仅仅需要256个页表项
+	mov esi, 0
+	mov edx, PG_US_U | PG_RW_W | PG_P
+.create_pte:
+	mov [ebx + esi], edx
+	add esi, 4
+	add edx, 4096
+	loop .create_pte
+
+; 创建其他pde  虚拟地址的高1GB的映射
+	mov ecx, 1022 - 768
+	mov esi, 769
+	add eax, 0x2000
+.create_kernal_pde:
+	mov [PAGE_DIR_TABLE_POS + esi * 4], eax
+	inc esi
+	add eax, 0x1000
+	loop .create_kernal_pde
+	ret
+
+	
 
 
