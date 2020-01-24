@@ -57,5 +57,7 @@ PG_US_U   equ     100b
 
 
 ;---------------------加载kernel-----------------------------------------------------
-KERNEL_START_SECTOR   equ    9         ; kernel.bin所在的扇区号
-KERNEL_BIN_BASE_ADDR  equ    0x70000   ; kernel在内存中的起始地址
+KERNEL_START_SECTOR   equ    9        	 ; kernel.bin所在的扇区号
+KERNEL_BIN_BASE_ADDR  equ    0x70000  	 ; kernel在内存中的起始地址
+PT_NULL				  equ    0        	 ; 表示该段被忽略
+KERNEL_ENTER_POINT	  equ    0xc0001500	 ; kernel执行入口地址   ; 

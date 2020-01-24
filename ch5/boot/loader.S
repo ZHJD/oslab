@@ -26,9 +26,9 @@ total_mem_bytes       dd   0
 ;----------------以下是段选择子--------------------------------------------------------------
 ;------ 段选择子共16位，第0和1位是请求特权级
 ;------ 第2位用于区分是lgt还是gdt------------------------------------------------------------
-SECTION_DATA          equ               (0x002<<3) + T1_GDT + RPL0  ;数据段选择子
-SECTION_VIDEO         equ               (0x003<<3) + T1_GDT + RPL0  ;显存段选择子
-SECTION_CODE          equ               (0x001<<3) + T1_GDT + RPL0  ;代码段选择子
+SELECTOR_DATA          equ               (0x002<<3) + T1_GDT + RPL0  ;数据段选择子
+SELECTOR_VIDEO         equ               (0x003<<3) + T1_GDT + RPL0  ;显存段选择子
+SELECTOR_CODE          equ               (0x001<<3) + T1_GDT + RPL0  ;代码段选择子
 
 
 
@@ -164,17 +164,17 @@ msg_size              equ  $ - error_msg
 	mov cr0, eax
 
 
-	jmp dword SECTION_CODE: p_mode_start ; 刷新流水线
+	jmp dword SELECTOR_CODE: p_mode_start ; 刷新流水线
     ; 并更新段缓冲寄存器
 
 [bits 32]
 p_mode_start:
-	mov ax,    SECTION_DATA
+	mov ax,    SELECTOR_DATA
 	mov ds,    ax
 	mov es,    ax
 	mov ss,    ax
 	mov esp,   LOADER_BASE_ADDR
-	mov ax,    SECTION_VIDEO
+	mov ax,    SELECTOR_VIDEO
 	mov gs,    ax
 
 
@@ -187,9 +187,8 @@ mov eax, KERNEL_START_SECTOR  ; kernel.bin 所在的扇区号
 mov ebx, KERNEL_BIN_BASE_ADDR ; 
 ; 从磁盘读出后， 写入到ebx指定的地址
 mov ecx, 200
-
+; 内核文件读入内存
 call rd_disk_m_32
-
 
 ;------------------------------------启用分页机制-------------------------------------------------
 ; 创建页目录及页表并初始化页内存位置
@@ -219,8 +218,70 @@ mov cr0, eax
 ; 开启分页后，用gdt新的地址重新加载
 lgdt [gdt_ptr] ; 必须在开启分页后再重新加载，因为此时的段描述符表中的地址是虚地址
 
+;------------------------------------------------------------------------------------------
+;强制刷新流水线
+	jmp SELECTOR_CODE:enter_kernel
+enter_kernel:
+	call  kernel_init
+	mov esp, 0xc009f000
+	jmp KERNEL_ENTER_POINT
+
+
 mov byte [gs:480], 'V'
 jmp $
+
+;---------------把kernel.bin中的segment拷贝到编译的地址--------------------------------------
+kernel_init:
+	xor eax, eax
+	xor ebx, ebx		; ebx记录程序头表地址
+	xor ecx, ecx		; ecx记录程序头表中的program header数量
+	xor edx, edx		; edx记录size of program header也就是e_phentsize
+
+
+	mov edx, [KERNEL_BIN_BASE_ADDR + 42]   ; 偏移42字节的地方是program header的大小，占2个字节
+	mov ebx, [KERNEL_BIN_BASE_ADDR + 28]   ; 偏移28字节处为程序头表地址，占4个字节
+	add ebx, KERNEL_BIN_BASE_ADDR
+	mov cx,  [KERNEL_BIN_BASE_ADDR + 44]   ; e_phnum偏移44字节，本身占2个字节
+
+.each_segment:
+	cmp byte [ebx + 0], PT_NULL  ; 若相等，则表示该段未使用
+	je .PTNULL
+
+	; 为函数memcpy压入参数，参数从右往左依次压入
+	; 函数原型类似于memcpy(dst, src, size)
+	push dword [ebx + 16] 				; 偏移program header 16字节处为p_filesz,为本段在文件中的大小, 占4字节大小
+	mov  eax,  [ebx + 4]  				; 偏移program header 4字节处为p_offset,即本段内容在elf中的偏移梁，占4字节大小
+	add  eax,  KERNEL_BIN_BASE_ADDR     ; 加上kernel.bin被加载到的物理地址，则eax为本段所在的物理地址
+	push eax
+	push dword [ebx + 8]				; 压入第一个参数，目的地址，偏移程序头8字节的位置是p_vaddr
+
+	call mem_cpy						; 调用mem_cpy 完成段复制
+
+.PTNULL:
+	add ebx, edx						; 为进入下个段作准备
+	
+	loop .each_segment
+	ret
+
+;---------------------------逐个字节拷贝mem_cpy(dst, src, size)-------------------------------
+;输入: 栈中三个参数(dst, src, size)
+;输出: 无
+;---------------------------------------------------------------------------------------------
+mem_cpy:
+	cld			  ; DF置0，从低地址向高地址发展
+	push ebp
+	mov ebp, esp
+	push ecx      ; rep 指令用到了ecx
+				  ; 但ecx对外层循环还有用，故入栈备份
+	mov edi, [ebp + 8]  ; dst
+	mov esi, [ebp + 12] ; src
+	mov ecx, [ebp + 16] ; size
+	rep movsb           ; 复制
+	; rep = repeat si 为 源地址， di为目的地址
+	;恢复环境
+	pop ecx	
+	pop ebp
+	ret
 
 ;---------------------读磁盘------------------------------------------------------------------
 rd_disk_m_32:
