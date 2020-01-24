@@ -238,7 +238,7 @@ kernel_init:
 	xor edx, edx		; edx记录size of program header也就是e_phentsize
 
 
-	mov edx, [KERNEL_BIN_BASE_ADDR + 42]   ; 偏移42字节的地方是program header的大小，占2个字节
+	mov dx, [KERNEL_BIN_BASE_ADDR + 42]   ; 偏移42字节的地方是program header的大小，占2个字节
 	mov ebx, [KERNEL_BIN_BASE_ADDR + 28]   ; 偏移28字节处为程序头表地址，占4个字节
 	add ebx, KERNEL_BIN_BASE_ADDR
 	mov cx,  [KERNEL_BIN_BASE_ADDR + 44]   ; e_phnum偏移44字节，本身占2个字节
@@ -256,7 +256,7 @@ kernel_init:
 	push dword [ebx + 8]				; 压入第一个参数，目的地址，偏移程序头8字节的位置是p_vaddr
 
 	call mem_cpy						; 调用mem_cpy 完成段复制
-
+	add  esp, 12						; 清理栈中压入的三个参数
 .PTNULL:
 	add ebx, edx						; 为进入下个段作准备
 	
@@ -345,7 +345,7 @@ rd_disk_m_32:
 .go_on_read:
 	in ax, dx
 	mov [ebx], ax
-	add bx, 2
+	add ebx, 2
 	loop .go_on_read
 	ret
 
