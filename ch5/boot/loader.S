@@ -253,7 +253,7 @@ rd_disk_m_32:
 
 	; LBA 16-23 bit
 	shr eax, cl
-	mov ax, 0x1f5
+	mov dx, 0x1f5
 	out dx, al
 	
 	shr eax, cl
@@ -287,11 +287,6 @@ rd_disk_m_32:
 	add bx, 2
 	loop .go_on_read
 	ret
-
-
-
-
-
 
 ;-----------------------创建页目录及页表--------------------------------------------------------
 setup_page:
