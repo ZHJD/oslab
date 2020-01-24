@@ -54,3 +54,8 @@ PG_RW_R   equ     0_0b ; 可读u不可写
 PG_RW_W   equ     10b  ; 可读可写
 PG_US_S   equ     000b ; user/superuser 位,若为1，则表示处于user级别，若为0，表示处于superuser级别
 PG_US_U   equ     100b
+
+
+;---------------------加载kernel-----------------------------------------------------
+KERNEL_START_SECTOR   equ    9         ; kernel.bin所在的扇区号
+KERNEL_BIN_BASE_ADDR  equ    0x70000   ; kernel在内存中的起始地址
