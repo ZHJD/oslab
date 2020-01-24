@@ -280,10 +280,10 @@ rd_disk_m_32:
 	mov dx, 256 ; 一个扇区有512字节，每次读入一个字，共需要di*512/2,所以di*256
 	mul dx
 	mov cx, ax
-	mov dx, 0x1f8
+	mov dx, 0x1f0
 .go_on_read:
 	in ax, dx
-	mov [bx], ax
+	mov [ebx], ax
 	add bx, 2
 	loop .go_on_read
 	ret
