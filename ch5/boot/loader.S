@@ -269,10 +269,11 @@ kernel_init:
 ;---------------------------------------------------------------------------------------------
 mem_cpy:
 	cld			  ; DF置0，从低地址向高地址发展
-	push ebp
+	push ebp      ; 备份ebp
 	mov ebp, esp
 	push ecx      ; rep 指令用到了ecx
 				  ; 但ecx对外层循环还有用，故入栈备份
+	; 不是用pop的原因是栈顶是函数返回地址
 	mov edi, [ebp + 8]  ; dst
 	mov esi, [ebp + 12] ; src
 	mov ecx, [ebp + 16] ; size
