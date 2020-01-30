@@ -1,8 +1,10 @@
 ; 通过写显卡实现put_char函数
-
 TI_GDT	equ		0
 RPL0    equ     0
 SELECTOR_VIDEO   equ   (0x0003 << 3) + TI_GDT + RPL0
+
+section .data
+put_int_buffer	dq		0	; 定义8个字节缓冲区用于数字对字符的转换
 
 [bits 32]
 section .text
@@ -130,5 +132,62 @@ put_char:       ; push all double的缩写，该指令压入双字长的寄存�
 	out dx, al
 
 .put_char_done:
+	popad
+	ret
+
+;-------------------------把小端字节序的数字转换成对应的ascii后，倒置--------------------------------------
+; 输入：栈中参数为待打印的数字
+; 输出：在屏幕上打印16进制数字
+global put_int
+put_int:
+	pushad
+	mov ebp, esp;
+	mov eax, [ebp + 4 + 8 * 4]  ; 8个寄存器加上call的返回地址
+	mov edx, eax
+	mov edi, 7	 ; 指定在put_int_buffer中初始的偏移量
+	mov ecx, 8	 ; 32位数字中， 16进制是8个
+	mov ebx, put_int_buffer
+
+.16based_4bits:
+	and edx, 0x0000_000f
+	cmp edx, 9
+	jg .is_A2F
+	add edx, '0'
+	jmp .store
+.is_A2F:
+	sub edx, 10
+	add edx, 'A'
+
+.store:
+	mov [ebx + edi], dl
+	dec edi
+	shr eax, 4
+	mov edx, eax
+	loop .16based_4bits
+
+.ready_to_print:
+	inc edi
+.skip_prefix_0:
+	cmp edi, 8
+
+	je .full_0
+
+.go_on_skip:
+	mov cl, [ebx + edi]
+	inc edi
+	cmp cl, '0'
+	je  .skip_prefix_0
+	dec edi
+	jmp .put_each_num
+.full_0:
+	mov cl, '0'
+.put_each_num:
+	push ecx
+	call put_char
+	add  esp, 4    ; 恢复栈
+	inc  edi
+	mov  cl, [ebx + edi]
+	cmp  edi, 8
+	jl   .put_each_num
 	popad
 	ret
