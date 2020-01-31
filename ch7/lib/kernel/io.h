@@ -44,6 +44,7 @@ static inline uint8_t inb(uint16_t port)
 static inline void insw(uint16_t port, void* addr, uint32_t word_cnt)
 {
   // insw负责把从端口中读出的数据写入到es:edi指向的内存
+  // ecx是循环计数器
   asm volatile ("cld; rep insw": "+D"(addr), "+c"(word_cnt): "d"(port): "memory");
 }
 
