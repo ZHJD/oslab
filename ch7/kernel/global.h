@@ -29,3 +29,5 @@
 
 #define IDT_DESC_ATTR_DPL3  \
 	((IDT_DESC_P << 7) + (IDT_DESC_DPL3 << 5) + IDT_DESC_S + IDT_DESC_TYPE_386)
+
+#endif
