@@ -25,6 +25,13 @@ struct gate_desc
 	uint16_t	func_offset_high_word;    // 中断处理程序在目标段内的偏移量31-16位
 };
 
+
+// ---------------------------------------------------------------------------------
+char* intr_name[IDT_DESC_CNT];   // 用于保存异常的名字
+// 定义中断处理程序数组，在kernel.S中定义的intrXXentry
+// 只是中断处理程序的入口，最终调用的是ide_table中的处理程序
+intr_handler idt_table[IDT_DESC_CNT];
+
 //---------------------------------------------------------------------------------
 // 使用static关键字， 该函数名和变量名在其它文件中不可见
 static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function);
@@ -35,10 +42,64 @@ static void idt_desc_init(void);
 // 初始化可编程中断控制器8259A
 static void pic_init(void);
 
+// 完成一般中断处理函数注册及异常名称注册
+static void exception_init(void);
+
+// 通用的中断处理函数， 一般用在异常出现时处理
+// vec_nr 中断向量号
+static void general_intr_handle(uint8_t vec_nr);
+
 static struct gate_desc idt[IDT_DESC_CNT]; // idt是中断描述符表，定义了一个中断描述符表数组
 
 extern intr_handler intr_entry_table[IDT_DESC_CNT];	// 声明引用定义在kernel.S中的中断处理函数入口数组
 
+
+//*********************************************************************************************************
+static void general_intr_handler(uint8_t vec_nr)
+{
+  if(vec_nr == 0x27 || vec_nr == 0x2f)
+  {
+    // IRQ7和IRQ15会产生伪中断，无需处理
+    // 0x2f是从片8259A上的最后一个引脚IRQ,保留项
+    return;
+  }
+  put_str("int vector : 0x");
+  put_int(vec_nr);
+  put_char('\n');
+}
+
+static void exception_init(void)
+{
+  int i;
+  for(i = 0; i < IDT_DESC_CNT; i++)
+  {
+    // idt_table中的函数在kernel.S中根据中断向量号调用
+    // 如call [idt_table + 向量号*4]
+    // 每个指针占用四个字节
+    idt_table[i] = general_intr_handler;
+    intr_name[i] = "unknown";
+  }
+  intr_name[0]  = "#DE Divide Error";
+  intr_name[1]  = "#DB Debug Exception";
+  intr_name[2]  = "No Maskable Interrupt";
+  intr_name[3]  = "#BP Breakpoint Exception";
+  intr_name[4]  = "#OF Overflow Exception";
+  intr_name[5]  = "#BR Bound Range Exceeded Exception";
+  intr_name[6]  = "#UD Invalid Opcode Exception";
+  intr_name[7]  = "#NM Device not Available Exception";
+  intr_name[8]  = "DF Double Fault Exception";
+  intr_name[9]  = "Coprocessor Segment Overrun";
+  intr_name[10] = "#TS Invaild TSS Exception";
+  intr_name[11] = "#NP Segment Not Present";
+  intr_name[12] = "#SS Stack Fault Exception";
+  intr_name[13] = "#GP General Protection Exception";
+  intr_name[14] = "#PF Page-Fault Exception";
+  // 15是保留项，还没有使用
+  intr_name[16] = "#MF x87 FPU Floating-Point Error";
+  intr_name[17] = "#AC Alignment Check Exception";
+  intr_name[18] = "#MC Machine-Check Exception";
+  intr_name[19] = "#XF SIMD Floating-Point Exception";
+}
 
 static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function)
 {
@@ -90,8 +151,9 @@ void idt_init(void)
 {
 	put_str("idt_init start\n");
 	idt_desc_init();			// 初始化中断描述符表
-	pic_init();					// 初始化8259A
-
+	exception_init();     // 异常名称化并注册通常的中断处理函数
+  pic_init();					  // 初始化8259A
+  
 	// 加载idt
 	uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)((uint32_t)idt << 16)));
 	asm volatile("lidt %0" : : "m" (idt_operand));
