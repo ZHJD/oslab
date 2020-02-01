@@ -42,12 +42,12 @@ extern intr_handler intr_entry_table[IDT_DESC_CNT];	// 声明引用定义在kern
 
 static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function)
 {
-	p_gdesc->func_offset_low_word  = (uint32_t)function & 0x0000_ffff;
+	p_gdesc->func_offset_low_word  = (uint32_t)function & 0x0000ffff;
 	// 段分为系统段和数据段，数据段中能执行的是代码段,系统段中的数据是cpu要用到的，如中断描述符表
-	p_gdesc->selector 			   = SELECTION_K_CODE;  // SELECTION_K_CODE 定义在global.h中，指向内核数据段中的代码段的选择子
+	p_gdesc->selector 			   = SELECTOR_K_CODE;  // SELECTION_K_CODE 定义在global.h中，指向内核数据段中的代码段的选择子
 	p_gdesc->dcount				   = 0;
 	p_gdesc->attribute			   = attr;
-	p_gdesc->func_offset_high_word = (uint32_t)function & 0xffff_0000;
+	p_gdesc->func_offset_high_word = (uint32_t)function & 0xffff0000;
 }
 
 static void idt_desc_init(void)
