@@ -1,5 +1,6 @@
-# oslab
+# a simple os
 参考书籍，用汇编语言和c语言写一个带有字符界面的操作系统。  
+
 开发环境:  
 * ububtu16<br>
 * nasm<br>
