@@ -1,16 +1,13 @@
 # oslab
-参考书籍，用汇编语言和c语言写一个带有字符界面的操作系统。\\
-
-开发环境 \\
-
-​	ububtu16<br>
-​	nasm<br>
-​	gcc
-​	ld
-​	vim
-​	bochs虚拟机<br>
-
-目录:
+参考书籍，用汇编语言和c语言写一个带有字符界面的操作系统。  
+开发环境  
+	ububtu16<br>
+	nasm<br>
+	gcc
+	ld
+	vim
+	bochs虚拟机  
+目录:  
 	[ch3] (https://github.com/ZHJD/oslab/tree/master/ch3)
 
 ​	---mbr 和loader,进入保护模式
