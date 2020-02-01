@@ -1,0 +1,9 @@
+遇到下面这个链接错误后
+  interrupt.c:(.text+0x20e): undefined reference to `__stack_chk_fail_local'
+  ld: build/kernel.bin: hidden symbol `__stack_chk_fail_local' isn't defined
+gcc编译的时候加上-fno-stack-protector
+
+由于开发的是32位系统，而开发环境是64位，所以要加参数
+nasm -f elf32
+gcc -m32
+ld -m elf_i386
