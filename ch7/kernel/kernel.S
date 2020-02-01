@@ -4,6 +4,7 @@
 %define ZERO push 0		    ; 如果该中断cpu不会向栈中压入error_code,
 						              ; 则手动压入32位0，进行占位
 
+extern idt_table          ; 声明在c语言中定义的中断处理函数表
 extern put_str 			      ; 声明外部函数
 
 section .data			        ; 数据节，编译成elf文件，会自动合并属性相同的节
@@ -21,7 +22,7 @@ intr%1entry:		; 每个中断向量号对应一个中断处理程序，%1会被�
 					      ; 这个标号代表了该中断处理程序的入口地址
 	
 	%2			    	; nop或者push 0
-  ; 保护上下文环境
+  ; 保护上下文环境，为调用c函数做准备，因为调用c代码可能会破坏这些寄存器
   push ds
   push es
   push fs
