@@ -6,7 +6,8 @@
 * gcc  
 * ld  
 * vim  
-* bochs虚拟机    
+* bochs虚拟机   
+
 目录:  
 * [ch3](./ch3)---mbr 和loader,进入保护模式  
 * [ch5](./ch5) ---完善loader，开启分页机制，加载elf格式内核到内存并解析运行内核  
