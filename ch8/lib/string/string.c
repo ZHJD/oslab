@@ -49,7 +49,7 @@ void memcpy(void* dst_, const void* src_, uint32_t size)
  * size:字节数
  × 返回值:1  大于
  *        0  等于
- *        -1 小于
+ *       -1  小于
  */
 int memcmp(const void* a_, const void* b_, uint32_t size)
 {
