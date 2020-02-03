@@ -47,7 +47,8 @@ section .data
 %endmacro		    	; 结束宏定义
 
 section .text
-global intr_exit:
+global intr_exit
+intr_exit:
   ; 下面恢复上下文环境
   add esp, 4     ; 根据调用约定，清理栈中的参数
   popad
