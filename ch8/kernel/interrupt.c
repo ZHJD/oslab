@@ -47,7 +47,7 @@ static void exception_init(void);
 
 // 通用的中断处理函数， 一般用在异常出现时处理
 // vec_nr 中断向量号
-static void general_intr_handle(uint8_t vec_nr);
+static void general_intr_handler(uint8_t vec_nr);
 
 static struct gate_desc idt[IDT_DESC_CNT]; // idt是中断描述符表，定义了一个中断描述符表数组
 
