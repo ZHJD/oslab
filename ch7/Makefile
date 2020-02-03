@@ -34,4 +34,4 @@ all:$(BUILD_DIR)/kernel.bin
 	@echo "编译完成"
 
 clean:
-	cd $(BUILD_DIR) && rm -f ./$(BUILD_DIR)/*
+	cd ./$(BUILD_DIR)/ && rm *
