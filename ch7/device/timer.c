@@ -43,11 +43,11 @@
  * 返回值:无
  */
 static void frequency_set(uint8_t counter_point, 
-                          uint8_t pit_control_point.
+                          uint8_t pit_control_point,
                           uint8_t counter_no,
                           uint8_t rwl,
                           uint8_t counter_mode,
-                          uint16_t counter_value
+                          uint16_t counter_value,
                           uint8_t is_bcd)
 {
     /*拼接控制字 */
@@ -77,5 +77,5 @@ void timer_init()
                   COUNTER_VALUE,
                   IS_BCD
                  );
-    put_str("timer init done"\n");
+    put_str("timer init done\n");
 }
