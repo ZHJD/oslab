@@ -6,6 +6,12 @@
 
 #define IDT_DESC_CNT 0x21	// 目前总共支持的中断数,共33个中断处理程序
 
+/*eflags的if位为1，表示开中断，if大写也表示 */
+#define EFLAGS_IF    0x00000200
+
+/*获取eflags寄存器的值,=g表示放在寄存器和内存都可以*/
+#define GET_EFLAGS(EFLAGS_VAR) asm volatile("pushfl; popl %0": "=g"(EFLAGS_VAR))
+
 //---------------------------------------------------------------------------------
 #define PIC_M_CTRL  0x20  // 主片的控制端口是0x20
 #define PIC_M_DATA  0x21  // 主片的数据端口是0x21
@@ -159,3 +165,68 @@ void idt_init(void)
 	asm volatile("lidt %0" : : "m" (idt_operand));
 	put_str("idt_init done\n");
 }
+
+/************************************
+ * 函数名:intr_get_status()
+ * 功能:获取中断状态
+ * 返回值:开中断还是关中断
+ */
+enum intr_status get_intr_status()
+{
+    uint32_t eflags = 0;
+    GET_EFLAGS(eflags);
+    return (eflags & EFLAGS_IF)? INTR_ON: INTR_OFF;
+}
+
+/************************************
+ * 函数名:intr_enable()
+ * 功能：开中断，并返回打开中断前的中断状态
+ * 返回值：返回开中断前的中断状态
+ */
+enum intr_status intr_enable()
+{
+    enum intr_status old_status = get_intr_status();
+    if(old_status == INTR_OFF)
+    {
+        /*开中断*/
+        asm volatile("sli");
+    }
+    return old_status;
+}
+
+/************************************
+ * 函数名:intr_disable()
+ * 功能:关闭中断
+ * 返回值:返回关中断前的状态
+ */
+enum intr_status intr_disable()
+{
+    enum intr_status old_status = get_intr_status();
+    if(old_status == INTR_ON)
+    {
+        /*关中断*/
+        asm volatile("cli");
+    }
+    return old_status;
+}
+
+/************************************
+ * 函数名:set_intr_status()
+ * 功能:中断设置为status
+ * 参数:intr_status
+ * 返回设置中断前的状态
+ */
+enum intr_status set_intr_status(enum intr_status status)
+{
+    /* 如果status是intr_on，则开中断，如果不是则关中断
+     * 并返回设置中断前的状态
+     * 、
+    return status & INTR_ON? intr_enable(): intr_disable();
+}
+
+
+
+
+
+
+
