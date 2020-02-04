@@ -189,7 +189,7 @@ enum intr_status intr_enable()
     if(old_status == INTR_OFF)
     {
         /*开中断*/
-        asm volatile("sli");
+        asm volatile("sti");
     }
     return old_status;
 }
@@ -220,7 +220,7 @@ enum intr_status set_intr_status(enum intr_status status)
 {
     /* 如果status是intr_on，则开中断，如果不是则关中断
      * 并返回设置中断前的状态
-     * 、
+     */
     return status & INTR_ON? intr_enable(): intr_disable();
 }
 
