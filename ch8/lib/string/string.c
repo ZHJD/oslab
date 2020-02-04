@@ -10,15 +10,16 @@
  * size:字节数
  × 返回值:无
  */
-void memset(void* dst_, uint8_t value, uint32_t size)
+void memset(void *dst_, uint8_t value, uint32_t size)
 {
+    ASSERT(dst_ != NULL);
     /*进行的是逐个字节赋值 */
-     uint8_t* dst = dst_;
-    for(: size > 0; size--)
+    uint8_t *dst = dst_;
+    for ( : size > 0; size--)
     {
         *(dst++) = value;
     }
-} 
+}
 
 /******************************************************************************
  * 函数名:memcpy()
@@ -28,15 +29,16 @@ void memset(void* dst_, uint8_t value, uint32_t size)
  * size:字节数
  × 返回值:无
  */
-void memcpy(void* dst_, const void* src_, uint32_t size)
+void memcpy(void *dst_, const void *src_, uint32_t size)
 {
+    ASSERT(dst_ != NULL && src_ != NULL);
     /*使用逐字节复制*/
-    uint8_t* src = src_;
-     const uint8_t* dst = dst_;
-     for(uint32_t i = 0; i < size; i++)
-     {
+    uint8_t *src = src_;
+    const uint8_t *dst = dst_;
+    for (uint32_t i = 0; i < size; i++)
+    {
         *(dst++) = *(src++);
-     } 
+    }
 }
 
 /******************************************************************************
@@ -49,20 +51,21 @@ void memcpy(void* dst_, const void* src_, uint32_t size)
  *        0  等于
  *       -1  小于
  */
-int memcmp(const void* a_, const void* b_, uint32_t size)
+int memcmp(const void *a_, const void *b_, uint32_t size)
 {
+    ASSERT(a_ != NULL && b_ !- NULL);
     /*根据ascll码比较大小*/
-    const char* a = a_;
-     const char* b = b_;
-    for(uint32_t i = 0; i < size; i++, a++, b++)
+    const char *a = a_;
+    const char *b = b_;
+    for (uint32_t i = 0; i < size; i++, a++, b++)
     {
-        if(*a < *b)
+        if (*a < *b)
         {
             return -1;
         }
-        else if(*a > *b)
+        else if (*a > *b)
         {
-             return 1;
+            return 1;
         }
     }
     return 0;
@@ -73,10 +76,12 @@ int memcmp(const void* a_, const void* b_, uint32_t size)
  * 功能:讲字符串从src_复制到dst_,两个字符串都以'\0'为结尾
  * 返回:dst_
  */
-char* strcpy(char* dst_, const char* src_) 
+char *strcpy(char *dst_, const char *src_)
 {
-    char* r = dst_;
-    while(*dst++ = *src++);
+    ASSERT(dst_ != NULL && src_ != NULL);
+    char *r = dst_;
+    while (*dst++ = *src++)
+        ;
     return r;
 }
 
@@ -86,16 +91,16 @@ char* strcpy(char* dst_, const char* src_)
  * str: 指向字符串的指针
  * 返回:字符串长度
  */
-uint32_t strlen(const char* str)
+uint32_t strlen(const char *str)
 {
     ASSERT(str != NULL);
     /*这种写法可以节省内存 */
-    const char* p = str;
+    const char *p = str;
     /*退出while循环前还会执行++*/
-    while(*p++);
+    while (*p++)
+        ;
     return (p - str - 1);
 }
-
 
 /******************************************************************************
  * 函数名:strcmp()
@@ -106,18 +111,18 @@ uint32_t strlen(const char* str)
  *         a_ < b_ -1
  *         a_ = b_ 0
  */
-int strcmp(const char* a_, const char* b_)
+int strcmp(const char *a_, const char *b_)
 {
     ASSERT(a_ != NULL && b_ != NULL);
-    while(a_ && b_)
+    while (a_ && b_)
     {
-         if(*a_ < *b_)
-         {  
-             return -1;
-         }
-        else if(*a_ > *b_)
+        if (*a_ < *b_)
         {
-             return 1;
+            return -1;
+        }
+        else if (*a_ > *b_)
+        {
+            return 1;
         }
         else
         {
@@ -125,22 +130,21 @@ int strcmp(const char* a_, const char* b_)
             b_++;
         }
     }
-     /*如果a_不为空,则a_大*/
-     if(a_)
-     {
-        return 1;
-     }
-     /*如果b_不为空*/
-    else if(b_)
+    /*如果a_不为空,则a_大*/
+    if (a_)
     {
-         return -1;
+        return 1;
     }
-     else
-     {
-         return 0;
-     }
+    /*如果b_不为空*/
+    else if (b_)
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
 }
-
 
 /******************************************************************************
  * 函数名:strchr()
@@ -149,20 +153,19 @@ int strcmp(const char* a_, const char* b_)
  * ch:字符
  * 返回值:字符ch地址
  */
-char* strchr(const char* str, const char ch)
+char *strchr(const char *str, const char ch)
 {
     ASSERT(str != NULL);
-    while(str != NULL)
+    while (str != NULL)
     {
-        if(*str -- ch)
+        if (*str-- ch)
         {
-         return (char*)str;
+            return (char *)str;
         }
         str++;
     }
     return NULL;
 }
-
 
 /*****************************************************************************
  * 函数名:strrchr()
@@ -171,19 +174,19 @@ char* strchr(const char* str, const char ch)
  * ch:  待查找字符
  * 返回值：首次出现ch的地址
  */
-char* strrchr(const char* str, const char ch)
+char *strrchr(const char *str, const char ch)
 {
     ASSERT(str != NULL);
-    const char* last_char = NULL;
-    while(*str != '\0')
+    const char *last_char = NULL;
+    while (*str != '\0')
     {
-        if(*str == ch)
+        if (*str == ch)
         {
             last_char = str;
         }
         str++;
     }
-    return (char*)last_char;
+    return (char *)last_char;
 }
 
 /****************************************************************************
@@ -193,13 +196,15 @@ char* strrchr(const char* str, const char ch)
  * src_:源字符串
  * 返回值:连接后字符串的首地址
  */
-char* strcat(char* dst_, const char* src_)
+char *strcat(char *dst_, const char *src_)
 {
     ASSERT(dst_ != NULL && src_ != NULL);
-    char* str = dst_;
-    while(*str++);
+    char *str = dst_;
+    while (*str++)
+        ;
     str--;
-    while(*str++ = * src_++);
+    while (*str++ = *src_++)
+        ;
     return dst_;
 }
 
@@ -210,13 +215,13 @@ char* strcat(char* dst_, const char* src_)
  * ch:字符
  * 返回值:出现次数
  */
-uint32_t strchrs(const char* str, char ch)
+uint32_t strchrs(const char *str, char ch)
 {
     ASSERT(str != NULL);
     uint32_t cnt = 0;
-    while(*str != '\0')
+    while (*str != '\0')
     {
-        if(*str == ch)
+        if (*str == ch)
         {
             cnt++;
         }
@@ -224,15 +229,4 @@ uint32_t strchrs(const char* str, char ch)
     }
     return cnt;
 }
-
-
-
-
-
-
-
-
-
-
-
 
