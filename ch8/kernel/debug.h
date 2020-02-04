@@ -33,7 +33,7 @@ void panic_spin(char* filename, int line, const char* func, const char* conditio
             {}                  \
         else                    \
         /* 符号#让编译器把宏的参数转化为字符串常量*/  \
-            {PANIC(#CONDITION)} 
+            {PANIC(#CONDITION); } 
 #endif /* __NDEBUG */
 
 #endif /*__KERNEL_DEBUG_H*/
