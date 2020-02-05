@@ -2,6 +2,7 @@
 #define __KERNEL_GLOBAL_H
 
 #include "stdint.h"
+#include "stdbool.h"
 
 #define RPL0 0
 #define RPL1 1
@@ -29,5 +30,9 @@
 
 #define IDT_DESC_ATTR_DPL3  \
 	((IDT_DESC_P << 7) + (IDT_DESC_DPL3 << 5) + IDT_DESC_S + IDT_DESC_TYPE_386)
+
+
+#define NULL 0
+
 
 #endif
