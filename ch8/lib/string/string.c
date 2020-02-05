@@ -15,7 +15,7 @@ void memset(void *dst_, uint8_t value, uint32_t size)
     ASSERT(dst_ != NULL);
     /*进行的是逐个字节赋值 */
     uint8_t *dst = dst_;
-    for ( : size > 0; size--)
+    for (; size > 0; size--)
     {
         *(dst++) = value;
     }
@@ -34,7 +34,7 @@ void memcpy(void *dst_, const void *src_, uint32_t size)
     ASSERT(dst_ != NULL && src_ != NULL);
     /*使用逐字节复制*/
     uint8_t *src = src_;
-    const uint8_t *dst = dst_;
+    uint8_t *dst = dst_;
     for (uint32_t i = 0; i < size; i++)
     {
         *(dst++) = *(src++);
@@ -53,7 +53,7 @@ void memcpy(void *dst_, const void *src_, uint32_t size)
  */
 int memcmp(const void *a_, const void *b_, uint32_t size)
 {
-    ASSERT(a_ != NULL && b_ !- NULL);
+    ASSERT(a_ != NULL && b_ != NULL);
     /*根据ascll码比较大小*/
     const char *a = a_;
     const char *b = b_;
@@ -80,8 +80,7 @@ char *strcpy(char *dst_, const char *src_)
 {
     ASSERT(dst_ != NULL && src_ != NULL);
     char *r = dst_;
-    while (*dst++ = *src++)
-        ;
+    while((*dst_++ = *src_++));
     return r;
 }
 
@@ -97,8 +96,7 @@ uint32_t strlen(const char *str)
     /*这种写法可以节省内存 */
     const char *p = str;
     /*退出while循环前还会执行++*/
-    while (*p++)
-        ;
+    while (*p++);
     return (p - str - 1);
 }
 
@@ -158,7 +156,7 @@ char *strchr(const char *str, const char ch)
     ASSERT(str != NULL);
     while (str != NULL)
     {
-        if (*str-- ch)
+        if (*str-- == ch)
         {
             return (char *)str;
         }
@@ -200,11 +198,9 @@ char *strcat(char *dst_, const char *src_)
 {
     ASSERT(dst_ != NULL && src_ != NULL);
     char *str = dst_;
-    while (*str++)
-        ;
+    while (*str++);
     str--;
-    while (*str++ = *src_++)
-        ;
+    while((*str++ = *src_++));
     return dst_;
 }
 
