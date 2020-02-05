@@ -16,10 +16,10 @@ typedef struct virtual_addr
 }virtual_addr;
 
 /* 内核内存池 */
-extern kernel_pool;
+//extern pool kernel_pool;
 
 /* 用户内存池 */
-extern user_pool;
+//extern pool user_pool;
 
 /*****************************************************
  * 函数名:mem_init()

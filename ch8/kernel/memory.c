@@ -92,7 +92,7 @@ static void mem_pool_init(const uint32_t all_mem)
     kerrnel_pool.pool_bitmap.bits = (void *)MEM_BITMAP_BASE;
 
     /* 用户位图在内核位图之后 */
-    user_pool.pool_bitmap_bits = (void *)(MEM_BITMAP_BASE + kbm_length);
+    user_pool.pool_bitmap.bits = (void *)(MEM_BITMAP_BASE + kbm_length);
 
     /********************** 输出内存池信息 ******************************/
     put_str("  kernel_pool_bitmap_start: 0x");
@@ -113,7 +113,7 @@ static void mem_pool_init(const uint32_t all_mem)
 
     /* 位图所在内存请0 */
     bitmap_init(&kerrnel_pool.pool_bitmap);
-    bitmap_init(&user_pool.bitmap);
+    bitmap_init(&user_pool.pool_bitmap);
 
     /* 初始化内核虚拟地址的位图，按照实际物理内存大小生成数组 */
     kernel_vaddr.vaddr_bitmap.btmp_bytes_len = kbm_length;
