@@ -1,14 +1,14 @@
-#ifndef __KERNEL_IOMAP_H
-#define __KERNEL_IOMAP_H
+#ifndef __KERNEL_BITMAP_H
+#define __KERNEL_BITMAP_H
 #include "global.h"
-
+#include "stdbool.h"
 
 
 typedef struct bitmap
 {
     uint32_t btmp_bytes_len;
     /*在遍历位图的时候，整体上以字节为单位，最后逐位遍历*/
-    uint8_t* bytes;
+    uint8_t* bits;
 }bitmap;
 
 /**************************************
@@ -45,3 +45,6 @@ typedef struct bitmap
   * 返回值:无
   */
  void bit_map_set(bitmap* btmp, const uint32_t bit_idx, const int8_t value);
+
+
+#endif

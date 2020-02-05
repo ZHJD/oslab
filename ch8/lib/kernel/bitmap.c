@@ -1,5 +1,6 @@
 #include "bitmap.h"
 #include "string.h"
+#include "debug.h"
 
 /*用于判断位图中单个位是1还是0*/
 #define BITMAP_MASK 1
@@ -30,7 +31,7 @@
      uint32_t bit_odd  = bit_idx % 8;
 
      /*得到包含指定位的字节*/
-     uint8_t  byte     = (btmp->bytes)[byte_idx];
+     uint8_t  byte     = (btmp->bits)[byte_idx];
 
     /*通过移位做&操作*/
      return byte & (BITMAP_MASK << bit_odd);
@@ -47,7 +48,7 @@
  {
      uint32_t byte_idx = 0;
      /*先逐个字节比较*/
-     while((0xff == btmp->bytes[byte_idx]) 
+     while((0xff == btmp->bits[byte_idx]) 
             && byte_idx < btmp->btmp_bytes_len)
     {
         byte_idx++;
@@ -59,8 +60,6 @@
     }
 
     uint32_t bit_idx_start = 8 * byte_idx;
-
-    uint32_t 
 
     uint32_t count = 0;
 
@@ -97,15 +96,15 @@
      /*value 值只能为0或者1*/
      ASSERT(value == 0 || value == 1);
      uint32_t byte_idx = bit_idx / 8;
-     uint32_t bit_idx  = bit_idx % 8;
+     uint32_t bit_offset  = bit_idx % 8;
 
      if(value)
      {
-         btmp->bytes[byte_idx] |= (BITMAP_MASK << bit_idx);
+         btmp->bits[byte_idx] |= (BITMAP_MASK << bit_offset);
      }
      else
      {
          /* “~”号表示逐位取反*/
-         btmp->bytes[byte_idx] &= ~(BITMAP_MASK << bit_idx);
+         btmp->bits[byte_idx] &= ~(BITMAP_MASK << bit_offset);
      }
  }
