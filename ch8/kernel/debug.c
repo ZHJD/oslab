@@ -30,7 +30,7 @@ void panic_spin(char* filename, int line, const char* func, const char* conditio
     put_str(func);
     put_char('\n');
 
-    put_str("condition");
+    put_str("condition:");
     put_str(condition);
     put_char('\n');
 
