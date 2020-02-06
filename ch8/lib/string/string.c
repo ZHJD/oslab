@@ -14,11 +14,12 @@ void memset(void *dst_, uint8_t value, uint32_t size)
 {
     ASSERT(dst_ != NULL);
     /*进行的是逐个字节赋值 */
-    uint8_t *dst = dst_;
+    uint8_t *dst = (uint8_t*)dst_;
     for (; size > 0; size--)
     {
         *(dst++) = value;
     }
+    put_str("\n\nmemset done!\n");
 }
 
 /******************************************************************************
@@ -33,7 +34,7 @@ void memcpy(void *dst_, const void *src_, uint32_t size)
 {
     ASSERT(dst_ != NULL && src_ != NULL);
     /*使用逐字节复制*/
-    uint8_t *src = src_;
+    const uint8_t *src = src_;
     uint8_t *dst = dst_;
     for (uint32_t i = 0; i < size; i++)
     {
