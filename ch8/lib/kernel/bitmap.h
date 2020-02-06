@@ -44,7 +44,7 @@ typedef struct bitmap
   * value:二进制数
   * 返回值:无
   */
- void bit_map_set(bitmap* btmp, const uint32_t bit_idx, const int8_t value);
+ void bitmap_set(bitmap* btmp, const uint32_t bit_idx, const int8_t value);
 
 
 #endif
