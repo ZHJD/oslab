@@ -1,7 +1,6 @@
 #include "memory.h"
 #include "print.h"
 #include "debug.h"
-#include "bitmap.h"
 
 /* 一个页大小为 4096 KB */
 #define PAGE_SIZE 4096
@@ -125,6 +124,7 @@ static void mem_pool_init(const uint32_t all_mem)
 
     /* 初始化内核虚拟地址的位图，按照实际物理内存大小生成数组 */
     kernel_vaddr.vaddr_bitmap.btmp_bytes_len = kbm_length;
+    
 
     /* 内核虚拟地址的位图放在物理内存位图之后 */
     kernel_vaddr.vaddr_bitmap.bits = (void*)(MEM_BITMAP_BASE + 
@@ -148,15 +148,19 @@ static void mem_pool_init(const uint32_t all_mem)
 static void* vaddr_get(const pool_flags pf, const uint32_t pg_cnt)
 {
     int vaddr_start = 0;
-
+    
     /* 表示自此位开始有连续pg_cnt个空闲位 */
     int bit_idx_start = -1;
+
     if(pf == PF_KERNEL)
     {
         /* 扫描得到连续pg_cnt个空闲页 */
         bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap, pg_cnt);
+        
+
         if(bit_idx_start == -1)
         {
+            put_str("\nscan error\n");
             return NULL;
         }
         /* 对这pg_cnt个位赋值1，表示已经分配，避免重复分配 */
@@ -164,6 +168,7 @@ static void* vaddr_get(const pool_flags pf, const uint32_t pg_cnt)
         {
             bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + i, 1);
         }
+
         /* 申请到的虚拟地址的起始地址 */
         vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PAGE_SIZE;
     }
@@ -186,7 +191,7 @@ uint32_t* get_pde_ptr(const uint32_t vaddr)
 
     /* 0xfffff会访问到页目录所在页面，pde_idx * 4是页内偏移地址 */
     /* 原因是页目录表中的第1023项指向自身 */
-    uint32_t* pde = ((uint32_t*)(0xfffff000) + pde_idx * 4);
+    uint32_t* pde = (uint32_t*)(0xfffff000 + pde_idx * 4);
 
     return pde;
 }
@@ -202,8 +207,8 @@ uint32_t* get_pte_ptr(const uint32_t vaddr)
     uint32_t pte_idx = PTE_IDX(vaddr);
 
     /* pde 中的内容可能为空，所以用这种方式 */
-    uint32_t* pte = (uint32_t*)(0xffc00000 + (vaddr & 0xffc00000) >> 
-                                10 + pte_idx * 4);
+    uint32_t* pte = (uint32_t*)(0xffc00000 + ((vaddr & 0xffc00000) >> 
+                                10) + pte_idx * 4);
     return pte;
 }
 
@@ -213,7 +218,7 @@ uint32_t* get_pte_ptr(const uint32_t vaddr)
  * 功能:在m_pool中分配一个物理页框
  * 返回值:成功返回物理地址，失败返回NULL
  */
-static void* phy_alloc(const pool* m_pool)
+static void* phy_alloc(pool* m_pool)
 {
     /* 扫描位图 */
     int bit_idx = bitmap_scan(&m_pool->pool_bitmap, 1);
@@ -224,6 +229,7 @@ static void* phy_alloc(const pool* m_pool)
     }
     /* 分配 */
     bitmap_set(&m_pool->pool_bitmap, bit_idx, 1);
+    
 
     /* 返回地址 */
     return (void*)(m_pool->phy_addr_start + bit_idx * PAGE_SIZE);
@@ -243,6 +249,8 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr)
 
     uint32_t* pde = get_pde_ptr(vaddr);
     uint32_t* pte = get_pte_ptr(vaddr);
+    
+   // ASSERT(1 == 2);
 
     /*************** 注意 *******************************
      * 执行 *pte,可能会访问到*pde,所以要确保pde创建后才能
@@ -302,9 +310,10 @@ void* malloc_page(const pool_flags pf, const uint32_t pg_cnt)
     void* vaddr_start = vaddr_get(pf, pg_cnt);
     if(vaddr_start == NULL)
     {
-        return NULL;
+        ASSERT(vaddr_start != NULL);
+         return NULL;
     }
-
+    
     uint32_t vaddr = (uint32_t)vaddr_start;
     pool* mem_pool = pf == PF_KERNEL? &kerrnel_pool: &user_pool;
 
@@ -314,6 +323,7 @@ void* malloc_page(const pool_flags pf, const uint32_t pg_cnt)
         void* page_phyaddr = phy_alloc(mem_pool);
         if(page_phyaddr == NULL)
         {
+            ASSERT(page_phyaddr != NULL);
             /* 此处需要回收掉已经分配的*/
             return NULL;
         }
