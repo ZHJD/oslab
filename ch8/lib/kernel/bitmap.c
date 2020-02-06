@@ -12,7 +12,7 @@
  */
  void bitmap_init(bitmap* btmp)
  {
-     memset(btmp, 0, btmp->btmp_bytes_len);
+     memset(btmp->bits, 0, btmp->btmp_bytes_len);
  }
 
   /**************************************
@@ -53,6 +53,8 @@
     {
         byte_idx++;
     }
+    
+    ASSERT(byte_idx < btmp->btmp_bytes_len);
 
     if(byte_idx == btmp->btmp_bytes_len)
     {
