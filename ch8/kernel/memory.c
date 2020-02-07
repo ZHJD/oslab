@@ -249,7 +249,7 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr)
 
     uint32_t* pde = get_pde_ptr(vaddr);
     uint32_t* pte = get_pte_ptr(vaddr);
-    
+   
    // ASSERT(1 == 2);
 
     /*************** 注意 *******************************
