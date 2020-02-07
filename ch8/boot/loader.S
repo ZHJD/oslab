@@ -352,10 +352,10 @@ rd_disk_m_32:
 ;-----------------------创建页目录及页表--------------------------------------------------------
 setup_page:
 ; 把页目录和第一张页表所使用的空间全部清0
-	mov ecx, 8192  ; 二级页目录项总共占4k,即4096B
+	mov ecx, 8192 / 4  ; 二级页目录项总共占4k,即4096B
 	mov esi, 0;
 .clear_byte:
-	mov byte [PAGE_DIR_TABLE_POS + esi], 0
+	mov dword [PAGE_DIR_TABLE_POS + esi], 0
 	inc esi
 	loop .clear_byte
 
