@@ -2,8 +2,7 @@
 #include "print.h"
 #include "debug.h"
 
-/* 一个页大小为 4096 KB */
-#define PAGE_SIZE 4096
+
 
 /* 页目录表索引(高10位) */
 #define PDE_IDX(vaddr) ((vaddr & 0xffc00000) >> 22)

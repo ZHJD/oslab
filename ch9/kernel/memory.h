@@ -1,7 +1,7 @@
 #ifndef __KERNEL_MEMORY_H
 #define __KERNEL_MEMPRY_H
 
-#include "stdint.h"
+#include "global.h"
 #include "bitmap.h"
 
 /* 虚拟地址池，用于虚拟地址管理, 虚拟内存没有设置大小 */
