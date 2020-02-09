@@ -7,3 +7,5 @@ gcc编译的时候加上-fno-stack-protector
 nasm -f elf32
 gcc -m32
 ld -m elf_i386
+
+调用函数时采用调用在前，实现在后，不然会出错
