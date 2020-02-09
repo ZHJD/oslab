@@ -34,5 +34,7 @@
 
 #define NULL 0
 
+/* 定义页框大小 */
+#define PAGE_SIZE 4096
 
 #endif
