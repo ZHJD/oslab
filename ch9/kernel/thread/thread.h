@@ -130,7 +130,12 @@ typedef struct task_struct
 }task_struct;
 
 
-
+/************************************************
+ * 函数名:get_running_thread_pcb()
+ * 功能:获取正在运行线程的pcb
+ * 返回值:指向该线程pcb的指针 
+ */
+task_struct* get_running_thread_pcb();
 
 /***********************************************
  * 函数名:thread_start()
