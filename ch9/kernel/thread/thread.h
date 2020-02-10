@@ -150,4 +150,12 @@ task_struct* thread_start(char* name,
                           int prio,
                           thread_func* function,
                           void* func_arg);
+
+/*********************************************
+ * 函数名:thread_init()
+ * 功能:初始化线程
+ * 返回值:无
+ */
+void thread_init(void);
+
 #endif
