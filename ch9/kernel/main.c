@@ -3,23 +3,43 @@
 #include "memory.h"
 #include "thread.h"
 
-void func(void* arg);
+void func1(void* arg);
+void func2(void* arg);
+
 
 int main(void) {
     put_str("I am a kernel.\n");
 	init_all();
     
-    thread_start("print", 31, func, "thread_start");
+    // 开启外中断
+    intr_enable();   
+    thread_start("fun1", 31, func1, "aaaaaaaaaaaa");
+    thread_start("fun2", 8, func2, "bbbbbbbbbbbb");
 
    // asm volatile("sti"); // 开中断
-	while(1);
+	while(1)
+    {
+        put_str("Main \n");
+    };
 	return 0;
 }
 
-void func(void* arg)
+void func1(void* arg)
 {
     char* ch = (char*)arg;
-    for(int i = 0; i < 10; i++)
+    for(;;)
+    {
+        put_str(arg);
+        put_char('\n');
+    }
+    while(1);
+}
+
+
+void func2(void* arg)
+{
+    char* ch = (char*)arg;
+    for(;;)
     {
         put_str(arg);
         put_char('\n');
