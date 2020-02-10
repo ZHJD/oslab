@@ -4,6 +4,7 @@
 #include "thread.h"
 #include "interrupt.h"
 #include "debug.h"
+#include "global.h"
 
 /*计数器频率，中断频率*/
 #define IRQ0_FREQUENCY     100
@@ -76,7 +77,7 @@ static void frequency_set(uint8_t counter_point,
 static void intr_timer_handler(void)
 {
     task_struct* cur_thread = get_running_thread_pcb();
-    ASSERT(cur_thread->stack_magic == get_running_thread_pcb);
+    ASSERT(cur_thread->stack_magic == THREAD_MAGIC_NUM);
     
     /* 记录此线程占用的cpu时间 */
     cur_thread->elapsed_ticks++;
@@ -102,7 +103,7 @@ static void intr_timer_handler(void)
  */
 void timer_init()
 {
-    put_str("timer init start!\n");
+    put_str("\ntimer init start!\n");
     frequency_set(COUNTER_POINT,
                   PIT_CONTROL_POINT,
                   COUNTER_NO,
