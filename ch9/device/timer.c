@@ -1,8 +1,9 @@
 #include "timer.h"
 #include "print.h"
 #include "io.h"
-#include "intrrupt.h"
-#include "timer.h"
+#include "thread.h"
+#include "interrupt.h"
+#include "debug.h"
 
 /*计数器频率，中断频率*/
 #define IRQ0_FREQUENCY     100
@@ -83,7 +84,7 @@ static void intr_timer_handler(void)
     /* 总共发生的滴答数 */
     ticks++;
 
-    if(cur->thread->ticks == 0)
+    if(cur_thread->ticks == 0)
     {
         schedule();
     }
