@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "print.h"
 #include "io.h"
+#include "intrrupt.h"
 
 /*计数器频率，中断频率*/
 #define IRQ0_FREQUENCY     100
@@ -69,6 +70,7 @@ static void frequency_set(uint8_t counter_point,
  */
 void timer_init()
 {
+    put_str("timer init start!\n");
     frequency_set(COUNTER_POINT,
                   PIT_CONTROL_POINT,
                   COUNTER_NO,
@@ -77,5 +79,6 @@ void timer_init()
                   COUNTER_VALUE,
                   IS_BCD
                  );
+    register_handler(0x20, intr_timer_handler);
     put_str("timer init done\n");
 }
