@@ -47,4 +47,12 @@ enum intr_status intr_disable();
 /*完成有关中断的所有初始化工作*/
 void idt_init(void);
 
+/*************************************
+ * 函数名:register_handler()
+ * vector_no:中断号
+ * function: 中断处理程序
+ * 功能:把中断处理程序注册到idt_table中
+ */
+void register_handler(const uint8_t vector_no, intr_handler function);
+
 #endif
