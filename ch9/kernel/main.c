@@ -10,16 +10,16 @@ void func2(void* arg);
 int main(void) {
     put_str("I am a kernel.\n");
 	init_all();
-    
-    // 开启外中断
-    intr_enable();   
+     
     thread_start("fun1", 31, func1, "aaaaaaaaaaaa");
     thread_start("fun2", 8, func2, "bbbbbbbbbbbb");
-
+    
+    put_str("开启中断\n");    
+    intr_enable();
    // asm volatile("sti"); // 开中断
 	while(1)
     {
-        put_str("Main \n");
+        put_str("Main ");
     };
 	return 0;
 }
@@ -30,7 +30,7 @@ void func1(void* arg)
     for(;;)
     {
         put_str(arg);
-        put_char('\n');
+       // put_char('\n');
     }
     while(1);
 }
@@ -42,7 +42,7 @@ void func2(void* arg)
     for(;;)
     {
         put_str(arg);
-        put_char('\n');
+       // put_char('\n');
     }
     while(1);
 }
