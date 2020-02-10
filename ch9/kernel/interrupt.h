@@ -55,4 +55,11 @@ void idt_init(void);
  */
 void register_handler(const uint8_t vector_no, intr_handler function);
 
+/***********************************************
+ * 函数名:intr_timer_handler()
+ * 功能:当发生时钟中断时，进入该函数进行处理
+ * 返回值:无
+ */
+void intr_timer_handler(void);
+
 #endif
