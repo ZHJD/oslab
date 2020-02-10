@@ -11,10 +11,10 @@
 typedef struct list_elem
 {
     /* 前驱结点 */
-    list_elem* prev;
+    struct list_elem* prev;
 
     /* 后驱结点 */
-    list_elem* next;
+    struct list_elem* next;
 }list_elem;
 
 /* 链表结构，用于实现队列 */
@@ -28,7 +28,7 @@ typedef struct list
 }list;
 
 /* 自定义函数类型function,用于在list_traversal中做回调函数 */
-typedef bool function(list_elem* int arg);
+typedef bool function(list_elem*, int arg);
 
 
 /*************************************
@@ -99,7 +99,7 @@ bool elem_find(list* pList, list_elem* obj_elem);
  * 判断是否符合条件。
  * 返回值:返回指向指定元素的指针或者NULL
  */ 
-list_elem* list_traversal(list* pList, function func, int arg)
+list_elem* list_traversal(list* pList, function* func, int arg);
 
 /****************************************************
  * 函数名:list_len()
@@ -107,7 +107,7 @@ list_elem* list_traversal(list* pList, function func, int arg)
  * 功能:list长度
  * 返回值:返回list的长度
  */ 
-uint32_t list_len(list* pList)
+uint32_t list_len(list* pList);
 
 /*************************************************************
  * 函数名:list_empty()

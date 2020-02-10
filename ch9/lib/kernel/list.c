@@ -9,10 +9,10 @@
  */
 void list_init(list* _list)
 {
-    _list->head->prev = NULL;
-    _list->head->next = &(_list->tail);
-    _list->tail->prev = &(_list->head);
-    _list->tail->next = NULL;
+    _list->head.prev = NULL;
+    _list->head.next = &(_list->tail);
+    _list->tail.prev = &(_list->head);
+    _list->tail.next = NULL;
 }
 
 /**************************************************
@@ -25,13 +25,13 @@ void list_init(list* _list)
 void list_insert_before(list_elem* before, list_elem* elem)
 {
     /* 关闭中断 */
-    intr_status old_status = intr_disable()
+    intr_status old_status = intr_disable();
 
     before->prev->next = elem;
     elem->prev = before->prev;
     elem->next = before;
     before->prev = elem;
-    intr_set_status(old_status);
+    set_intr_status(old_status);
 }
 
 /**************************************************
@@ -72,7 +72,7 @@ void list_remove(list_elem* pElem)
     pElem->next->prev = pElem->prev;
 
     /* 恢复关中断之前的状态 */
-    intr_set_status(old_status);
+    set_intr_status(old_status);
 }
 
 /****************************************
@@ -116,7 +116,7 @@ bool elem_find(list* pList, list_elem* obj_elem)
  * 判断是否符合条件。
  * 返回值:返回指向指定元素的指针或者NULL
  */ 
-list_elem* list_traversal(list* pList, function func, int arg)
+list_elem* list_traversal(list* pList, function* func, int arg)
 {
     list_elem* elem = pList->head.next;
     /* 如果队列为空，就必然没有符合条件的结点，故直接返回NULL */
@@ -126,7 +126,7 @@ list_elem* list_traversal(list* pList, function func, int arg)
     }
     while(elem != &pList->tail)
     {
-        if(function(elem, arg))
+        if(func(elem, arg))
         {
             return elem;
         }
