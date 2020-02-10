@@ -31,6 +31,9 @@
 #define IS_BCD              0
 
 
+/* ticks 是内核自中断开启以来总共的滴答数 */
+uint32_t ticks = 0;
+
 /****************************************************************
  * 函数名：frequency_set()
  * 功能： 往控制寄存器中写入控制字，并设置计数器初值
@@ -61,6 +64,33 @@ static void frequency_set(uint8_t counter_point,
     outb(counter_point, (uint8_t)counter_value);
     /*写入高8位*/
     outb(counter_point, (uint8_t)(counter_value >> 8));
+}
+
+/***********************************************
+ * 函数名:intr_timer_handler()
+ * 功能:当发生时钟中断时，进入该函数进行处理
+ * 返回值:无
+ */
+static void intr_timer_handler(void)
+{
+    task_struct* cur_thread = get_running_thread_pcb();
+    ASSERT(cur_thread->stack_magic == get_running_thread_pcb);
+    
+    /* 记录此线程占用的cpu时间 */
+    cur_thread->elapsed_ticks++;
+
+    /* 总共发生的滴答数 */
+    ticks++;
+
+    if(cur->thread->ticks == 0)
+    {
+        schedule();
+    }
+    else
+    {
+        cur_thread->ticks--;
+    }
+    
 }
 
 /************************************************************
