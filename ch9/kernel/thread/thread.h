@@ -117,7 +117,7 @@ typedef struct task_struct
     uint32_t elapsed_ticks; 
 
     /* 用于把线程加入一般队列(如就绪队列)等 */
-    list_elem gereral_tag;
+    list_elem general_tag;
 
     /* 用于把线程加入所all_thread队列 */
     list_elem all_list_tag;
