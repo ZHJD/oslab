@@ -169,7 +169,7 @@ static void make_main_thread(void)
      * get_kernel_page另分配一页
      */
     task_struct* main_thread = get_running_thread_pcb();
-    init_thread(main_thread, "main", 31);
+    init_thread(main_thread, "main", 2);
 
     /* main函数是当前正在运行的线程，不在thread_all_list中 */
     ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
@@ -184,8 +184,13 @@ static void make_main_thread(void)
 void schedule(void)
 {
     ASSERT(get_intr_status() == INTR_OFF);
+    
+    put_str("start schedule\n");
 
     task_struct* cur = get_running_thread_pcb();
+
+    put_int((uint32_t)cur);
+
     if(cur->status == TASK_RUNNING)
     {
         /* 此线程只是cpu时间片到了,触发了线程调度函数 */
@@ -210,6 +215,9 @@ void schedule(void)
     list_elem* thread_tag = list_pop_head(&thread_ready_list);
 
     task_struct* next = (task_struct*)((uint32_t)(thread_tag) & 0xfffff000);
+   
+    put_char('\n'); 
+    put_int(next);
 
     switch_to(cur, next);
 }
