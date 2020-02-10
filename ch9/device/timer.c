@@ -2,6 +2,7 @@
 #include "print.h"
 #include "io.h"
 #include "intrrupt.h"
+#include "timer.h"
 
 /*计数器频率，中断频率*/
 #define IRQ0_FREQUENCY     100
