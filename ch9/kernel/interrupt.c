@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include "global.h"
 #include "io.h"
-#include "thread.h"
+
 
 #define IDT_DESC_CNT 0x21 // 目前总共支持的中断数,共33个中断处理程序
 
@@ -157,30 +157,6 @@ static void idt_desc_init(void)
         make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
     }
     put_str(" idt_desc_init done\n");
-}
-
-/***********************************************
- */
-static void intr_timer_handler(void)
-{
-    task_struct* cur_thread = get_running_thread_pcb();
-    ASSERT(cur_thread->stack_magic == get_running_thread_pcb);
-    
-    /* 记录此线程占用的cpu时间 */
-    cur_thread->elapsed_ticks++;
-
-    /* 总共发生的滴答数 */
-    ticks++;
-
-    if(cur->thread->ticks == 0)
-    {
-        schedule();
-    }
-    else
-    {
-        cur_thread->ticks--;
-    }
-    
 }
 
 static void pic_init(void)
