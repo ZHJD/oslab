@@ -23,7 +23,7 @@ switch_to:
     mov eax, [esp + 24] ; 获取参数next
     ; next的值同时也是task_struct第一个成员self_kstack的地址，里面存放的是
     ; 0级栈的栈顶指针
-    mov esp, eax        ; 恢复esp
+    mov esp, [eax]        ; 恢复esp
 
     pop ebp
     pop ebx
