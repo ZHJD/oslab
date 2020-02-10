@@ -37,4 +37,7 @@
 /* 定义页框大小 */
 #define PAGE_SIZE 4096
 
+/* 线程栈中的魔数 */
+#define THREAD_MAGIC_NUM  0x19870916
+
 #endif
