@@ -265,7 +265,7 @@ void thread_unblock(task_struct* pthread)
     ASSERT(!elem_find(&thread_ready_list, &pthread->general_tag));
 
     /* 添加到就绪队列中并改为就绪态 */
-    list_push_back(&thread_ready_list, &pthread->general_tag);
+    list_push_head(&thread_ready_list, &pthread->general_tag);
     pthread->status = TASK_READY;
 
     set_intr_status(old_status);
