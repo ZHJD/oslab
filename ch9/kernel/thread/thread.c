@@ -169,7 +169,7 @@ static void make_main_thread(void)
      * get_kernel_page另分配一页
      */
     task_struct* main_thread = get_running_thread_pcb();
-    init_thread(main_thread, "main", 2);
+    init_thread(main_thread, "main", 8);
 
     /* main函数是当前正在运行的线程，不在thread_all_list中 */
     ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
@@ -185,11 +185,7 @@ void schedule(void)
 {
     ASSERT(get_intr_status() == INTR_OFF);
     
-    put_str("start schedule\n");
-
     task_struct* cur = get_running_thread_pcb();
-
-    put_int((uint32_t)cur);
 
     if(cur->status == TASK_RUNNING)
     {
@@ -197,9 +193,10 @@ void schedule(void)
 
         /* 由于当前线程处于运行态，不应该在就绪队列中 */
         ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
+        
         /* 加入就绪队列末尾 */
         list_push_back(&thread_ready_list, &cur->general_tag);
-
+        
         cur->ticks = cur->priority;
         cur->status = TASK_READY;
 
@@ -209,15 +206,17 @@ void schedule(void)
         /* 此线程是由于其它原因下处理器的 */
     }
     
+    put_int(list_len(&thread_ready_list));
+    put_char('\n');    
+    
     /* 就绪队列不空 */
     ASSERT(!list_empty(&thread_ready_list));
     /* 用于保存队列中的线程结点 */
     list_elem* thread_tag = list_pop_head(&thread_ready_list);
 
     task_struct* next = (task_struct*)((uint32_t)(thread_tag) & 0xfffff000);
-   
-    put_char('\n'); 
-    put_int(next);
+    
+    next->status = TASK_RUNNING;
 
     switch_to(cur, next);
 }
