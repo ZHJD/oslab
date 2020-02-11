@@ -57,6 +57,10 @@ void sema_down(semaphore* psema)
          */ 
         list_push_back(&psema->waiters, &get_running_thread_pcb()->general_tag);
         
+       // put_char('\n');
+       // put_int(psema->value);
+       // put_char('\n');    
+
         /***************************************************
          * 阻塞线程，直到被唤醒,唤醒之后是ready状态，需要等待调度才能上
          * cpu运行。假如存在3个请求资源值为1的信号量a、b、c。当a获得该资源
@@ -72,6 +76,7 @@ void sema_down(semaphore* psema)
     }
     /* 当被唤醒且此时临界资源可以访问时 */
     psema->value--;
+    
     set_intr_status(old_status);
 }
 
@@ -117,10 +122,14 @@ void lock_acquire(lock* plock)
 
         /* 已经获得，修改所有者 */
         plock->holder = get_running_thread_pcb();
+        
+        ASSERT(plock->holder_repeat_nr == 0);
+
         plock->holder_repeat_nr = 1;
     }
     else
     {
+       // put_str("\n123\n");
         /* 请求次数加1 */
         plock->holder_repeat_nr++;
     }

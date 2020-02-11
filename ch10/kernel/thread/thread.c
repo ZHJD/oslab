@@ -201,9 +201,9 @@ void schedule(void)
         cur->status = TASK_READY;
 
     }
-    else
+    else 
     {
-        /* 此线程是由于其它原因下处理器的 */
+       // put_str("\nblock\n");
     }
         
     /* 就绪队列不空 */
@@ -255,9 +255,9 @@ void thread_unblock(task_struct* pthread)
 {
     intr_status old_status = intr_disable();
     /* 只有当线程的取值为TASK_BLOCKED TASK_WAITING,TASK_HANGING时才能被唤醒 */
-    ASSERT(stat == TASK_BLOCKED || 
-           stat == TASK_WAITING ||
-           stat == TASK_HANGING
+    ASSERT(pthread->status == TASK_BLOCKED || 
+           pthread->status == TASK_WAITING ||
+           pthread->status == TASK_HANGING
     );
 
     /* 被唤醒的线程一定不是就绪态也一定不在就绪队列中 */
