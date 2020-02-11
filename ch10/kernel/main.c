@@ -18,7 +18,7 @@ int main(void) {
    // asm volatile("sti"); // 开中断
 	while(1)
     {
-        put_str("Main ");
+        put_str("ccc ");
     };
 	return 0;
 }

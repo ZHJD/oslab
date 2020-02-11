@@ -6,7 +6,7 @@
 
 extern idt_table          ; 声明在c语言中定义的中断处理函数表
 extern put_str 			      ; 声明外部函数
-
+extern put_int
 section .data			        ; 数据节，编译成elf文件，会自动合并属性相同的节
 
 intr_str db "interrupt occur!", 0xa, 0 ; 一个字符串，每个字符占用一个字节，0xa换行,0表示字符串结尾
@@ -19,8 +19,13 @@ intr_entry_table:				    	   ; 这个数组的起始地址,由于节会合并的
 %macro VECTOR 2
 section .text
 intr%1entry:		; 每个中断向量号对应一个中断处理程序，%1会被替换为中断向量号
-					      ; 这个标号代表了该中断处理程序的入口地址
-	
+				      ; 这个标号代表了该中断处理程序的入口地址
+   
+    ; 打印esp值
+    push esp
+    call put_int
+    add esp, 4
+      
 	%2			    	; nop或者push 0
   ; 保护上下文环境，为调用c函数做准备，因为调用c代码可能会破坏这些寄存器
   push ds

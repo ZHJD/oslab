@@ -168,8 +168,8 @@ static void make_main_thread(void)
      * 0x9e000 - 0x9f000,所以不需要通过
      * get_kernel_page另分配一页
      */
-    task_struct* main_thread = get_running_thread_pcb();
-    init_thread(main_thread, "main", 1);
+    main_thread = get_running_thread_pcb();
+    init_thread(main_thread, "main", 3);
 
     /* main函数是当前正在运行的线程，不在thread_all_list中 */
     ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
@@ -196,7 +196,7 @@ void schedule(void)
         
         /* 加入就绪队列末尾 */
         list_push_back(&thread_ready_list, &cur->general_tag);
-        
+                
         cur->ticks = cur->priority;
         cur->status = TASK_READY;
 
