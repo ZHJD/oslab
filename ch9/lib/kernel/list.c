@@ -31,6 +31,7 @@ void list_insert_before(list_elem* before, list_elem* elem)
     elem->prev = before->prev;
     elem->next = before;
     before->prev = elem;
+
     set_intr_status(old_status);
 }
 
