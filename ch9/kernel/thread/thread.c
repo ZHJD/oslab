@@ -169,7 +169,7 @@ static void make_main_thread(void)
      * get_kernel_page另分配一页
      */
     task_struct* main_thread = get_running_thread_pcb();
-    init_thread(main_thread, "main", 8);
+    init_thread(main_thread, "main", 1);
 
     /* main函数是当前正在运行的线程，不在thread_all_list中 */
     ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
@@ -205,10 +205,7 @@ void schedule(void)
     {
         /* 此线程是由于其它原因下处理器的 */
     }
-    
-    put_int(list_len(&thread_ready_list));
-    put_char('\n');    
-    
+        
     /* 就绪队列不空 */
     ASSERT(!list_empty(&thread_ready_list));
     /* 用于保存队列中的线程结点 */

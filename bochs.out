@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0x7f4f211e3010. after alignment, vector=0x7f4f211e4000
+00000000000i[MEM0  ] allocated memory at 0x7fd9bab76010. after alignment, vector=0x7fd9bab77000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/home/zhj/oslab/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Sun Feb  9 15:09:05 2020 (time0=1581232145)
+00000000000i[CMOS  ] Setting initial clock to: Tue Feb 11 13:42:06 2020 (time0=1581399726)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -136,6 +136,7 @@
 00000000000i[XGUI  ] Mouse capture off
 00000000000i[      ] set SIGINT handler to bx_debug_ctrlc_handler
 00000000000i[XGUI  ] Mouse capture off
+00000000000i[XGUI  ] Mouse capture off
 00000004661i[BIOS  ] $Revision: 12412 $ $Date: 2014-07-10 09:28:59 +0200 (Do, 10. Jul 2014) $
 00000319067i[KBD   ] reset-disable command received
 00000321798i[BIOS  ] Starting rombios32
@@ -176,29 +177,342 @@
 00001530262i[BXVGA ] VBE known Display Interface b0c5
 00001533187i[VBIOS ] VBE Bios $Id: vbe.c,v 1.65 2014/07/08 18:02:25 vruppert Exp $
 00001877664i[BIOS  ] ata0-0: PCHS=121/16/63 translation=none LCHS=121/16/63
-00003383668i[XGUI  ] charmap update. Font Height is 16
+00002858776i[XGUI  ] charmap update. Font Height is 16
 00005754870i[BIOS  ] IDE time out
 00017844200i[BIOS  ] Booting from 0000:7c00
-00416175901i[      ] Ctrl-C detected in signal handler.
-00416175902i[XGUI  ] Mouse capture off
-00416175902i[      ] dbg: Quit
-00416175902i[CPU0  ] CPU is in protected mode (active)
-00416175902i[CPU0  ] CS.mode = 32 bit
-00416175902i[CPU0  ] SS.mode = 32 bit
-00416175902i[CPU0  ] EFER   = 0x00000000
-00416175902i[CPU0  ] | EAX=c0003044  EBX=c0005000  ECX=c0100e50  EDX=c0003044
-00416175902i[CPU0  ] | ESP=c0100e28  EBP=c0100e40  ESI=00000000  EDI=00000000
-00416175902i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
-00416175902i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-00416175902i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-00416175902i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00416175902i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00416175902i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00416175902i[CPU0  ] |  FS:0000( 0005| 0|  0) 00000000 0000ffff 0 0
-00416175902i[CPU0  ] |  GS:0018( 0003| 0|  0) c00b8000 00007fff 1 1
-00416175902i[CPU0  ] | EIP=c0001598 (c0001598)
-00416175902i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
-00416175902i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
-00416175902i[CMOS  ] Last time is 1581232249 (Sun Feb  9 15:10:49 2020)
-00416175902i[XGUI  ] Exit
-00416175902i[SIM   ] quit_sim called with exit code 0
+00018081417i[XGUI  ] Mouse capture off
+00018081418i[XGUI  ] Mouse capture off
+00018081419i[XGUI  ] Mouse capture off
+00018081420i[XGUI  ] Mouse capture off
+00018081421i[XGUI  ] Mouse capture off
+00018081422i[XGUI  ] Mouse capture off
+00018081423i[XGUI  ] Mouse capture off
+00018081424i[XGUI  ] Mouse capture off
+00018081427i[XGUI  ] Mouse capture off
+00018081428i[XGUI  ] Mouse capture off
+00018081429i[XGUI  ] Mouse capture off
+00018081430i[XGUI  ] Mouse capture off
+00018081431i[XGUI  ] Mouse capture off
+00018082235i[XGUI  ] Mouse capture off
+00018082236i[XGUI  ] Mouse capture off
+00018150095i[XGUI  ] Mouse capture off
+00018150096i[XGUI  ] Mouse capture off
+00018150097i[XGUI  ] Mouse capture off
+00018150098i[XGUI  ] Mouse capture off
+00018150099i[XGUI  ] Mouse capture off
+00018150100i[XGUI  ] Mouse capture off
+00018150101i[XGUI  ] Mouse capture off
+00018150102i[XGUI  ] Mouse capture off
+00018193258i[XGUI  ] Mouse capture off
+00018193259i[XGUI  ] Mouse capture off
+00018193260i[XGUI  ] Mouse capture off
+00018193261i[XGUI  ] Mouse capture off
+00018193262i[XGUI  ] Mouse capture off
+00018193263i[XGUI  ] Mouse capture off
+00018193264i[XGUI  ] Mouse capture off
+00018193265i[XGUI  ] Mouse capture off
+00018193266i[XGUI  ] Mouse capture off
+00018236534i[XGUI  ] Mouse capture off
+00018236535i[XGUI  ] Mouse capture off
+00018236636i[XGUI  ] Mouse capture off
+00018236637i[XGUI  ] Mouse capture off
+00018236638i[XGUI  ] Mouse capture off
+00018236639i[XGUI  ] Mouse capture off
+00018236916i[XGUI  ] Mouse capture off
+00018236917i[XGUI  ] Mouse capture off
+00018236918i[XGUI  ] Mouse capture off
+00018236919i[XGUI  ] Mouse capture off
+00018236920i[XGUI  ] Mouse capture off
+00018236921i[XGUI  ] Mouse capture off
+00018237198i[XGUI  ] Mouse capture off
+00018237199i[XGUI  ] Mouse capture off
+00018237200i[XGUI  ] Mouse capture off
+00018237201i[XGUI  ] Mouse capture off
+00018237202i[XGUI  ] Mouse capture off
+00018237203i[XGUI  ] Mouse capture off
+00018237480i[XGUI  ] Mouse capture off
+00018237481i[XGUI  ] Mouse capture off
+00018237482i[XGUI  ] Mouse capture off
+00018237483i[XGUI  ] Mouse capture off
+00018237484i[XGUI  ] Mouse capture off
+00018237485i[XGUI  ] Mouse capture off
+00018237762i[XGUI  ] Mouse capture off
+00018237763i[XGUI  ] Mouse capture off
+00018237764i[XGUI  ] Mouse capture off
+00018237765i[XGUI  ] Mouse capture off
+00018237766i[XGUI  ] Mouse capture off
+00018237767i[XGUI  ] Mouse capture off
+00018238044i[XGUI  ] Mouse capture off
+00018238045i[XGUI  ] Mouse capture off
+00018238046i[XGUI  ] Mouse capture off
+00018238047i[XGUI  ] Mouse capture off
+00018238048i[XGUI  ] Mouse capture off
+00018238049i[XGUI  ] Mouse capture off
+00018238326i[XGUI  ] Mouse capture off
+00018238327i[XGUI  ] Mouse capture off
+00018238328i[XGUI  ] Mouse capture off
+00018238329i[XGUI  ] Mouse capture off
+00018238330i[XGUI  ] Mouse capture off
+00018238331i[XGUI  ] Mouse capture off
+00018238608i[XGUI  ] Mouse capture off
+00018238609i[XGUI  ] Mouse capture off
+00018238610i[XGUI  ] Mouse capture off
+00018238611i[XGUI  ] Mouse capture off
+00018238612i[XGUI  ] Mouse capture off
+00018238613i[XGUI  ] Mouse capture off
+00018238890i[XGUI  ] Mouse capture off
+00018238891i[XGUI  ] Mouse capture off
+00018238892i[XGUI  ] Mouse capture off
+00018238893i[XGUI  ] Mouse capture off
+00018238894i[XGUI  ] Mouse capture off
+00018238895i[XGUI  ] Mouse capture off
+00018239172i[XGUI  ] Mouse capture off
+00018239173i[XGUI  ] Mouse capture off
+00018239174i[XGUI  ] Mouse capture off
+00018239175i[XGUI  ] Mouse capture off
+00018239176i[XGUI  ] Mouse capture off
+00018239177i[XGUI  ] Mouse capture off
+00018239454i[XGUI  ] Mouse capture off
+00018239455i[XGUI  ] Mouse capture off
+00018239456i[XGUI  ] Mouse capture off
+00018239457i[XGUI  ] Mouse capture off
+00018239458i[XGUI  ] Mouse capture off
+00018239459i[XGUI  ] Mouse capture off
+00018239736i[XGUI  ] Mouse capture off
+00018239737i[XGUI  ] Mouse capture off
+00018239738i[XGUI  ] Mouse capture off
+00018239739i[XGUI  ] Mouse capture off
+00018239740i[XGUI  ] Mouse capture off
+00018239741i[XGUI  ] Mouse capture off
+00018240000i[KBD   ] internal keyboard buffer full, ignoring scancode.(38)
+00018240000i[KBD   ] internal keyboard buffer full, ignoring scancode.(8f)
+00018240000i[KBD   ] internal keyboard buffer full, ignoring scancode.(38)
+00018240000i[KBD   ] internal keyboard buffer full, ignoring scancode.(8f)
+00018240000i[KBD   ] internal keyboard buffer full, ignoring scancode.(38)
+00018240018i[XGUI  ] Mouse capture off
+00018240019i[XGUI  ] Mouse capture off
+00018240020i[XGUI  ] Mouse capture off
+00018240021i[XGUI  ] Mouse capture off
+00018240022i[XGUI  ] Mouse capture off
+00018240023i[XGUI  ] Mouse capture off
+00018240300i[XGUI  ] Mouse capture off
+00018240301i[XGUI  ] Mouse capture off
+00018240302i[XGUI  ] Mouse capture off
+00018240303i[XGUI  ] Mouse capture off
+00018240304i[XGUI  ] Mouse capture off
+00018240305i[XGUI  ] Mouse capture off
+00018240582i[XGUI  ] Mouse capture off
+00018240583i[XGUI  ] Mouse capture off
+00018240584i[XGUI  ] Mouse capture off
+00018240585i[XGUI  ] Mouse capture off
+00018240586i[XGUI  ] Mouse capture off
+00018240587i[XGUI  ] Mouse capture off
+00018240864i[XGUI  ] Mouse capture off
+00018240865i[XGUI  ] Mouse capture off
+00018240866i[XGUI  ] Mouse capture off
+00018240867i[XGUI  ] Mouse capture off
+00018240868i[XGUI  ] Mouse capture off
+00018240869i[XGUI  ] Mouse capture off
+00018242361i[XGUI  ] Mouse capture off
+00018242362i[XGUI  ] Mouse capture off
+00018242363i[XGUI  ] Mouse capture off
+00018242364i[XGUI  ] Mouse capture off
+00018242365i[XGUI  ] Mouse capture off
+00018242366i[XGUI  ] Mouse capture off
+00018242643i[XGUI  ] Mouse capture off
+00018242644i[XGUI  ] Mouse capture off
+00018242645i[XGUI  ] Mouse capture off
+00018242646i[XGUI  ] Mouse capture off
+00018242647i[XGUI  ] Mouse capture off
+00018242648i[XGUI  ] Mouse capture off
+00018242925i[XGUI  ] Mouse capture off
+00018242926i[XGUI  ] Mouse capture off
+00018242927i[XGUI  ] Mouse capture off
+00018242928i[XGUI  ] Mouse capture off
+00018242929i[XGUI  ] Mouse capture off
+00018242930i[XGUI  ] Mouse capture off
+00018243207i[XGUI  ] Mouse capture off
+00018243208i[XGUI  ] Mouse capture off
+00018243209i[XGUI  ] Mouse capture off
+00018243210i[XGUI  ] Mouse capture off
+00018243211i[XGUI  ] Mouse capture off
+00018243212i[XGUI  ] Mouse capture off
+00018243489i[XGUI  ] Mouse capture off
+00018243490i[XGUI  ] Mouse capture off
+00018243491i[XGUI  ] Mouse capture off
+00018243492i[XGUI  ] Mouse capture off
+00018243493i[XGUI  ] Mouse capture off
+00018243494i[XGUI  ] Mouse capture off
+00018243771i[XGUI  ] Mouse capture off
+00018243772i[XGUI  ] Mouse capture off
+00018243773i[XGUI  ] Mouse capture off
+00018243774i[XGUI  ] Mouse capture off
+00018243775i[XGUI  ] Mouse capture off
+00018243776i[XGUI  ] Mouse capture off
+00018244053i[XGUI  ] Mouse capture off
+00018244054i[XGUI  ] Mouse capture off
+00018244055i[XGUI  ] Mouse capture off
+00018244056i[XGUI  ] Mouse capture off
+00018244057i[XGUI  ] Mouse capture off
+00018244058i[XGUI  ] Mouse capture off
+00018244335i[XGUI  ] Mouse capture off
+00018244336i[XGUI  ] Mouse capture off
+00018244337i[XGUI  ] Mouse capture off
+00018244338i[XGUI  ] Mouse capture off
+00018244339i[XGUI  ] Mouse capture off
+00018244340i[XGUI  ] Mouse capture off
+00018244617i[XGUI  ] Mouse capture off
+00018244618i[XGUI  ] Mouse capture off
+00018244619i[XGUI  ] Mouse capture off
+00018244620i[XGUI  ] Mouse capture off
+00018244621i[XGUI  ] Mouse capture off
+00018244622i[XGUI  ] Mouse capture off
+00018244899i[XGUI  ] Mouse capture off
+00018244900i[XGUI  ] Mouse capture off
+00018244901i[XGUI  ] Mouse capture off
+00018244902i[XGUI  ] Mouse capture off
+00018244903i[XGUI  ] Mouse capture off
+00018244904i[XGUI  ] Mouse capture off
+00018245181i[XGUI  ] Mouse capture off
+00018245182i[XGUI  ] Mouse capture off
+00018245183i[XGUI  ] Mouse capture off
+00018245184i[XGUI  ] Mouse capture off
+00018245185i[XGUI  ] Mouse capture off
+00018245186i[XGUI  ] Mouse capture off
+00018245463i[XGUI  ] Mouse capture off
+00018245464i[XGUI  ] Mouse capture off
+00018245465i[XGUI  ] Mouse capture off
+00018245466i[XGUI  ] Mouse capture off
+00018245467i[XGUI  ] Mouse capture off
+00018245468i[XGUI  ] Mouse capture off
+00018245745i[XGUI  ] Mouse capture off
+00018245746i[XGUI  ] Mouse capture off
+00018245747i[XGUI  ] Mouse capture off
+00018245748i[XGUI  ] Mouse capture off
+00018245749i[XGUI  ] Mouse capture off
+00018245750i[XGUI  ] Mouse capture off
+00018246027i[XGUI  ] Mouse capture off
+00018246028i[XGUI  ] Mouse capture off
+00018246029i[XGUI  ] Mouse capture off
+00018246030i[XGUI  ] Mouse capture off
+00018246031i[XGUI  ] Mouse capture off
+00018246032i[XGUI  ] Mouse capture off
+00018246309i[XGUI  ] Mouse capture off
+00018246310i[XGUI  ] Mouse capture off
+00018246311i[XGUI  ] Mouse capture off
+00018246312i[XGUI  ] Mouse capture off
+00018246313i[XGUI  ] Mouse capture off
+00018246314i[XGUI  ] Mouse capture off
+00018246591i[XGUI  ] Mouse capture off
+00018246592i[XGUI  ] Mouse capture off
+00018246593i[XGUI  ] Mouse capture off
+00018246594i[XGUI  ] Mouse capture off
+00018246595i[XGUI  ] Mouse capture off
+00018246596i[XGUI  ] Mouse capture off
+00018248000i[KBD   ] internal keyboard buffer full, ignoring scancode.(8f)
+00018248000i[KBD   ] internal keyboard buffer full, ignoring scancode.(38)
+00018248088i[XGUI  ] Mouse capture off
+00018248089i[XGUI  ] Mouse capture off
+00018248090i[XGUI  ] Mouse capture off
+00018248091i[XGUI  ] Mouse capture off
+00018248092i[XGUI  ] Mouse capture off
+00018248093i[XGUI  ] Mouse capture off
+00018248370i[XGUI  ] Mouse capture off
+00018248371i[XGUI  ] Mouse capture off
+00018248372i[XGUI  ] Mouse capture off
+00018248373i[XGUI  ] Mouse capture off
+00018248374i[XGUI  ] Mouse capture off
+00018248375i[XGUI  ] Mouse capture off
+00018248652i[XGUI  ] Mouse capture off
+00018248653i[XGUI  ] Mouse capture off
+00018248654i[XGUI  ] Mouse capture off
+00018248655i[XGUI  ] Mouse capture off
+00018248656i[XGUI  ] Mouse capture off
+00018248657i[XGUI  ] Mouse capture off
+00018248934i[XGUI  ] Mouse capture off
+00018248935i[XGUI  ] Mouse capture off
+00018248936i[XGUI  ] Mouse capture off
+00018248937i[XGUI  ] Mouse capture off
+00018248938i[XGUI  ] Mouse capture off
+00018248939i[XGUI  ] Mouse capture off
+00018249216i[XGUI  ] Mouse capture off
+00018249217i[XGUI  ] Mouse capture off
+00018249218i[XGUI  ] Mouse capture off
+00018249219i[XGUI  ] Mouse capture off
+00018249220i[XGUI  ] Mouse capture off
+00018249221i[XGUI  ] Mouse capture off
+00018249498i[XGUI  ] Mouse capture off
+00018249499i[XGUI  ] Mouse capture off
+00018249500i[XGUI  ] Mouse capture off
+00018249501i[XGUI  ] Mouse capture off
+00018249502i[XGUI  ] Mouse capture off
+00018249503i[XGUI  ] Mouse capture off
+00018249780i[XGUI  ] Mouse capture off
+00018249781i[XGUI  ] Mouse capture off
+00018249782i[XGUI  ] Mouse capture off
+00018249783i[XGUI  ] Mouse capture off
+00018249784i[XGUI  ] Mouse capture off
+00018249785i[XGUI  ] Mouse capture off
+00018250062i[XGUI  ] Mouse capture off
+00018250063i[XGUI  ] Mouse capture off
+00018250064i[XGUI  ] Mouse capture off
+00018250065i[XGUI  ] Mouse capture off
+00018250066i[XGUI  ] Mouse capture off
+00018250067i[XGUI  ] Mouse capture off
+00018250344i[XGUI  ] Mouse capture off
+00018250345i[XGUI  ] Mouse capture off
+00018250346i[XGUI  ] Mouse capture off
+00018250347i[XGUI  ] Mouse capture off
+00018250348i[XGUI  ] Mouse capture off
+00018250349i[XGUI  ] Mouse capture off
+00018250626i[XGUI  ] Mouse capture off
+00018250627i[XGUI  ] Mouse capture off
+00018250628i[XGUI  ] Mouse capture off
+00018250629i[XGUI  ] Mouse capture off
+00018250630i[XGUI  ] Mouse capture off
+00018250631i[XGUI  ] Mouse capture off
+00018250908i[XGUI  ] Mouse capture off
+00018250909i[XGUI  ] Mouse capture off
+00018250910i[XGUI  ] Mouse capture off
+00018250911i[XGUI  ] Mouse capture off
+00018250912i[XGUI  ] Mouse capture off
+00018250913i[XGUI  ] Mouse capture off
+00018251190i[XGUI  ] Mouse capture off
+00018251191i[XGUI  ] Mouse capture off
+00018251192i[XGUI  ] Mouse capture off
+00018251193i[XGUI  ] Mouse capture off
+00018251194i[XGUI  ] Mouse capture off
+00018251195i[XGUI  ] Mouse capture off
+00018251472i[XGUI  ] Mouse capture off
+00018251473i[XGUI  ] Mouse capture off
+00018251474i[XGUI  ] Mouse capture off
+00018251475i[XGUI  ] Mouse capture off
+00018251476i[XGUI  ] Mouse capture off
+00018251477i[XGUI  ] Mouse capture off
+00018252000i[KBD   ] internal keyboard buffer full, ignoring scancode.(8f)
+00018252000i[KBD   ] internal keyboard buffer full, ignoring scancode.(38)
+00040352000i[KBD   ] internal keyboard buffer full, ignoring scancode.(8f)
+00093647106e[CPU0  ] write_virtual_checks(): write beyond limit, r/w
+03689613044i[      ] Ctrl-C detected in signal handler.
+03689613044i[XGUI  ] Mouse capture off
+03689613044i[      ] dbg: Quit
+03689613044i[CPU0  ] CPU is in protected mode (active)
+03689613044i[CPU0  ] CS.mode = 32 bit
+03689613044i[CPU0  ] SS.mode = 32 bit
+03689613044i[CPU0  ] EFER   = 0x00000000
+03689613044i[CPU0  ] | EAX=c000383c  EBX=c0006000  ECX=75660020  EDX=0000000d
+03689613044i[CPU0  ] | ESP=c0101d6c  EBP=c0101d94  ESI=00000000  EDI=00000000
+03689613044i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf SF zf af PF cf
+03689613044i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+03689613044i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
+03689613044i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+03689613044i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+03689613044i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+03689613044i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
+03689613044i[CPU0  ] |  GS:0018( 0003| 0|  0) c00b8000 00007fff 1 1
+03689613044i[CPU0  ] | EIP=c000171c (c000171c)
+03689613044i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
+03689613044i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
+03689613044i[CMOS  ] Last time is 1581400648 (Tue Feb 11 13:57:28 2020)
+03689613044i[XGUI  ] Exit
+03689613044i[SIM   ] quit_sim called with exit code 0

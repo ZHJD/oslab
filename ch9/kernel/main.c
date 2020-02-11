@@ -11,14 +11,14 @@ int main(void) {
     put_str("I am a kernel.\n");
 	init_all();
      
-    thread_start("fun1", 1, func1, "aaaaaaaaaaaa\n");
-    thread_start("fun2", 1, func2, "bbbbbbbbbbbb\n");
+    thread_start("fun1", 1, func1, "aaa ");
+    thread_start("fun2", 1, func2, "bbb ");
     
     intr_enable();
    // asm volatile("sti"); // 开中断
 	while(1)
     {
-        put_str("Main\n");
+        put_str("Main ");
     };
 	return 0;
 }
