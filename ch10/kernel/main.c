@@ -16,9 +16,10 @@ int main(void) {
     thread_start("fun1", 8, func1, "aaa ");
     thread_start("fun2", 31, func2, "bbb ");
     
+    lock_init(&lck);
+
     intr_enable();
    // asm volatile("sti"); // 开中断
-    lock_init(&lck);
     while(1)
     {
         lock_acquire(&lck);
