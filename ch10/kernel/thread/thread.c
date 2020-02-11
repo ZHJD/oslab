@@ -169,7 +169,7 @@ static void make_main_thread(void)
      * get_kernel_page另分配一页
      */
     main_thread = get_running_thread_pcb();
-    init_thread(main_thread, "main", 3);
+    init_thread(main_thread, "main", 31);
 
     /* main函数是当前正在运行的线程，不在thread_all_list中 */
     ASSERT(!elem_find(&thread_all_list, &main_thread->all_list_tag));
@@ -216,6 +216,59 @@ void schedule(void)
     next->status = TASK_RUNNING;
 
     switch_to(cur, next);
+}
+
+/**********************************************************
+ * 函数名:thread_block()
+ * stat:线程状态
+ * 功能:修改当前线程为阻塞态，换下处理器，当苏醒后恢复阻塞前的中断状态
+ * 返回值:无
+ */ 
+void thread_block(const task_status stat)
+{
+    /* 只有当线程的取值为TASK_BLOCKED TASK_WAITING,TASK_HANGING时才不会被调度 */
+    ASSERT(stat == TASK_BLOCKED || 
+           stat == TASK_WAITING ||
+           stat == TASK_HANGING
+    );
+    intr_status old_status = intr_disable();
+    task_struct* cur_thread = get_running_thread_pcb();
+
+    /* 只有正在运行的线程才能进入该函数，阻塞是一种主动行为 */
+    ASSERT(cur_thread->status == TASK_RUNNING);
+    cur_thread->status = stat;
+
+    /* 把当前线程换下处理器 */
+    schedule();
+
+    /* 当该线程苏醒后恢复中断状态  */
+    set_intr_status(old_status);
+}
+
+/*************************************************************
+ * 函数名:thread_unblock()
+ * pthread:被唤醒的线程，由当前线程调用
+ * 功能:把pthread唤醒，加入就绪队列，状态设置为ready
+ * 返回值:无
+ */ 
+void thread_unblock(task_struct* pthread)
+{
+    intr_status old_status = intr_disable();
+    /* 只有当线程的取值为TASK_BLOCKED TASK_WAITING,TASK_HANGING时才能被唤醒 */
+    ASSERT(stat == TASK_BLOCKED || 
+           stat == TASK_WAITING ||
+           stat == TASK_HANGING
+    );
+
+    /* 被唤醒的线程一定不是就绪态也一定不在就绪队列中 */
+    ASSERT(pthread->status != TASK_READY);
+    ASSERT(!elem_find(&thread_ready_list, &pthread->general_tag));
+
+    /* 添加到就绪队列中并改为就绪态 */
+    list_push_back(&thread_ready_list, &pthread->general_tag);
+    pthread->status = TASK_READY;
+
+    set_intr_status(old_status);
 }
 
 /*********************************************

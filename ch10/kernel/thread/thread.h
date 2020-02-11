@@ -158,4 +158,20 @@ task_struct* thread_start(char* name,
  */
 void thread_init(void);
 
+/**********************************************************
+ * 函数名:thread_block()
+ * stat:线程状态
+ * 功能:修改当前线程为阻塞态，换下处理器，当苏醒后恢复阻塞前的中断状态
+ * 返回值:无
+ */ 
+void thread_block(const task_status stat);
+
+/*************************************************************
+ * 函数名:thread_unblock()
+ * pthread:被唤醒的线程，由当前线程调用
+ * 功能:把pthread唤醒，加入就绪队列，状态设置为ready
+ * 返回值:无
+ */ 
+void thread_unblock(task_struct* pthread);
+
 #endif
