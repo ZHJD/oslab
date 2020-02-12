@@ -7,8 +7,6 @@
 void func1(void* arg);
 void func2(void* arg);
 
-lock lck;
-
 int main(void) {
     put_str("I am a kernel.\n");
 	init_all();
@@ -16,15 +14,12 @@ int main(void) {
     thread_start("fun1", 8, func1, "aaa ");
     thread_start("fun2", 31, func2, "bbb ");
     
-    lock_init(&lck);
 
     intr_enable();
    // asm volatile("sti"); // 开中断
     while(1)
     {
-        lock_acquire(&lck);
-        put_str("ccc ");
-        lock_release(&lck);
+        console_put_str("ccc ");
     };
 	return 0;
 }
@@ -34,9 +29,7 @@ void func1(void* arg)
     char* ch = (char*)arg;
     for(;;)
     {
-        lock_acquire(&lck);
-        put_str(arg);
-        lock_release(&lck);
+        console_put_str(arg);
     }
     while(1);
 }
@@ -47,9 +40,7 @@ void func2(void* arg)
     char* ch = (char*)arg;
     for(;;)
     {
-        lock_acquire(&lck);
-        put_str(arg);
-        lock_release(&lck);
+        console_put_str(arg);
     }
     while(1);
 }
