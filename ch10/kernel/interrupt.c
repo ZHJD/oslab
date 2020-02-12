@@ -5,7 +5,7 @@
 #include "io.h"
 
 
-#define IDT_DESC_CNT 0x21 // 目前总共支持的中断数,共33个中断处理程序
+#define IDT_DESC_CNT 0x30 // 目前总共支持的中断数,共33个中断处理程序
 
 /*eflags的if位为1，表示开中断，if大写也表示 */
 #define EFLAGS_IF 0x00000200
@@ -176,7 +176,7 @@ static void pic_init(void)
     outb(PIC_S_DATA, 0x01);
 
     // 打开主片上的IR0，目前只接受时钟产生的中断
-    outb(PIC_M_DATA, 0xfe);
+    outb(PIC_M_DATA, 0xfb);
     outb(PIC_S_DATA, 0xff);
 
     put_str(" pic_init done\n");
