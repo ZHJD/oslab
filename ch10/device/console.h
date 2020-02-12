@@ -1,5 +1,6 @@
 #ifndef __CONSOLE_H
 #define __CONSOLE_H
+#include "stdint.h"
 
 /***************************************
  * 函数名:console_put_str()

@@ -1,6 +1,5 @@
 #include "console.h"
 #include "print.h"
-#include "stdint.h"
 #include "sync.h"
 
 /* 控制台锁 */
