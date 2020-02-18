@@ -5,6 +5,9 @@
 #include "global.h"
 
 
+/* 定义键盘缓冲区 */
+ioqueue keyboard_buf;
+
 /* 键盘控制器8024的输出缓冲区寄存器端口号 */
 #define KBD_BUF_PORT 0x60
 
@@ -237,7 +240,9 @@ static void intr_keyboard_handler()
         /* 只处理asci不为0的键 */
         if(cur_char)
         {
-            put_char(cur_char);
+           // put_char(cur_char);
+            /* 放入键盘缓冲区 */
+            ioq_putchar(&keyboard_buf, cur_char);
             return;
         }
 
@@ -263,5 +268,6 @@ static void intr_keyboard_handler()
 
 void keyboard_init()
 {
+    ioqueue_init(&keyboard_buf);
     register_handler(0x21, intr_keyboard_handler);
 }

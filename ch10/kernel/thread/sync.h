@@ -3,16 +3,7 @@
 #include "list.h"
 #include "stdint.h"
 #include "thread.h"
-
-/* 信号量结构 */
-typedef struct  semaphore
-{
-    /* 资源值 */
-    int value;
-
-    /* 等待该资源的队列 */
-    list waiters;
-}semaphore;
+#include "semaphore.h"
 
 /* 锁结构 */
 typedef struct lock
