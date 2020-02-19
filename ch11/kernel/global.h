@@ -108,6 +108,7 @@
 
 
 /*************************  tss描述符属性   *******************************/
+/* tss的D和L位都是0 */
 #define TSS_DESC_D          0
 
 #define TSS_ATTR_HIGH       ((DESC_G_4K << 7) + (TSS_DESC_D << 6) + \
