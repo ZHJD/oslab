@@ -43,13 +43,13 @@ typedef struct intr_stack
     uint32_t ebp;
     
     /* pushad把esp压入，但popad忽略 */
-    uint32_t esp_dumpy;
+    uint32_t esp_dummy;
     uint32_t ebx;
     uint32_t edx;
     uint32_t ecx;
     uint32_t eax;
     uint32_t gs;
-    uint32_t fa;
+    uint32_t fs;
     uint32_t es;
     uint32_t ds;
 
