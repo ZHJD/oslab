@@ -2,6 +2,7 @@
 #include "string.h"
 #include "interrupt.h"
 #include "debug.h"
+#include "process.h"
 
 /* 主线程pcb */
 task_struct* main_thread;
@@ -213,6 +214,9 @@ void schedule(void)
     task_struct* next = (task_struct*)((uint32_t)(thread_tag) & 0xfffff000);
     
     next->status = TASK_RUNNING;
+
+    /* 切换任务页表等 */
+    process_activate(next);
 
     switch_to(cur, next);
 }
