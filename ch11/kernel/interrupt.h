@@ -2,6 +2,9 @@
 #define __KERNEL_INTERRUPT_H
 #include "stdint.h"
 
+
+
+
 /*中断处理函数入口地址*/
 typedef void* intr_handler;
 
@@ -15,6 +18,13 @@ typedef enum intr_status
     INTR_OFF,
     INTR_ON
 }intr_status;
+
+/********************************
+ * 函数名:intr_exit()
+ * 功能:退出中断
+ * 返回值:无
+ */ 
+void intr_exit(void);
 
 /************************************
  * 函数名:intr_get_status()
