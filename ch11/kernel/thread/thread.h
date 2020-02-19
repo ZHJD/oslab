@@ -122,11 +122,11 @@ typedef struct task_struct
 
     /* 用于把线程加入所all_thread队列 */
     list_elem all_list_tag;
+    
+    /* 用户进程的虚拟地址  */
+    virtual_addr userprog_vaddr;
 
-    /* 用户进程的虚拟地址 */
-    virtual_addr* userprog_vaddr;
-
-    /* 进程自己页表的虚拟地址 */
+    /* 进程的页表虚拟地址,如果是线程则为NULL */
     uint32_t* pgdir_vaddr;
 
     /* 栈的边界标记，用于检测栈的溢出*/

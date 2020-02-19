@@ -1,5 +1,5 @@
 #ifndef __KERNEL_MEMORY_H
-#define __KERNEL_MEMPRY_H
+#define __KERNEL_MEMORY_H 
 
 #include "global.h"
 #include "bitmap.h"
@@ -72,5 +72,22 @@ void* get_kernel_pages(const uint32_t pg_cnt);
  * 返回值:无
  */
 void mem_init();
+
+/*********************************************
+ * 函数名:get_user_pages()
+ * pg_cnt:要申请的页面数
+ * 功能:在用户虚拟地址空间和物理内存上申请pg_cnt个页面，全部清零
+ * 返回值:返回虚拟地址
+ */
+void* get_user_pages(uint32_t pg_cnt);
+
+/*****************************************************
+ * 函数名:get_a_page()
+ * pf:内核空间还是用户空间
+ * vaddr:要申请的虚拟地址
+ * 功能:申请一页内存，并把vaddr映射到该页内存上
+ * 返回值:成功返回vaddr,失败返回null
+ */ 
+void* get_a_page(pool_flags pf, uint32_t vaddr);
 
 #endif

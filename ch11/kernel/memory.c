@@ -1,7 +1,7 @@
 #include "memory.h"
 #include "print.h"
 #include "debug.h"
-
+#include "sync.h"
 
 
 /* 页目录表索引(高10位) */
@@ -35,10 +35,13 @@ typedef struct pool
 
      /* 本内存池字节容量 */
      uint32_t pool_size;
+
+     /* 申请内存时互斥 */
+     lock memory_lock;
 }pool;
  
 /* 内核内存池 */
-pool kerrnel_pool;
+pool kernel_pool;
 
 /* 用户内存池 */
 pool user_pool;
@@ -86,27 +89,27 @@ static void mem_pool_init(const uint32_t all_mem)
 
     uint32_t up_start = kp_start + kernel_free_page * PAGE_SIZE;
 
-    kerrnel_pool.phy_addr_start = kp_start;
-    kerrnel_pool.pool_size = kernel_free_page * PAGE_SIZE;
-    kerrnel_pool.pool_bitmap.btmp_bytes_len = kbm_length;
+    kernel_pool.phy_addr_start = kp_start;
+    kernel_pool.pool_size = kernel_free_page * PAGE_SIZE;
+    kernel_pool.pool_bitmap.btmp_bytes_len = kbm_length;
 
     user_pool.phy_addr_start = up_start;
     user_pool.pool_size = user_free_pages * PAGE_SIZE;
     user_pool.pool_bitmap.btmp_bytes_len = ubm_length;
 
     /* 在MEM_BITMAP_BASE 处生成位图 */
-    kerrnel_pool.pool_bitmap.bits = (void *)MEM_BITMAP_BASE;
+    kernel_pool.pool_bitmap.bits = (void *)MEM_BITMAP_BASE;
 
     /* 用户位图在内核位图之后 */
     user_pool.pool_bitmap.bits = (void *)(MEM_BITMAP_BASE + kbm_length);
 
     /********************** 输出内存池信息 ******************************/
     put_str("  kernel_pool_bitmap_start: 0x");
-    put_int((int)kerrnel_pool.pool_bitmap.bits);
+    put_int((int)kernel_pool.pool_bitmap.bits);
     put_char('\n');
 
     put_str("kernel_pool_phy_addr_start: 0x");
-    put_int((int)kerrnel_pool.phy_addr_start);
+    put_int((int)kernel_pool.phy_addr_start);
     put_char('\n');
 
     put_str("  user_pool_bitmap_start: 0x");
@@ -118,7 +121,7 @@ static void mem_pool_init(const uint32_t all_mem)
     put_char('\n');
 
     /* 位图所在内存请0 */
-    bitmap_init(&kerrnel_pool.pool_bitmap);
+    bitmap_init(&kernel_pool.pool_bitmap);
     bitmap_init(&user_pool.pool_bitmap);
 
     /* 初始化内核虚拟地址的位图，按照实际物理内存大小生成数组 */
@@ -151,7 +154,7 @@ static void* vaddr_get(const pool_flags pf, const uint32_t pg_cnt)
     /* 表示自此位开始有连续pg_cnt个空闲位 */
     int bit_idx_start = -1;
 
-    if(pf == PF_KERNEL)
+    if(pf == PF_KERNEL) // 申请内核内存池
     {
         /* 扫描得到连续pg_cnt个空闲页 */
         bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap, pg_cnt);
@@ -171,9 +174,28 @@ static void* vaddr_get(const pool_flags pf, const uint32_t pg_cnt)
         /* 申请到的虚拟地址的起始地址 */
         vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PAGE_SIZE;
     }
-    else
+    else // 申请用户内存池
     {
-        // 实现用户进程分配
+        /* 获取当前线程pcb */
+        task_struct* cur = get_running_thread_pcb();
+
+        /* 在当前线程的虚拟地址空间中申请pg_cnt个页面,用户进程的虚拟地址可以重合 */
+        bit_idx_start = bitmap_scan(&cur->userprog_vaddr.vaddr_bitmap, pg_cnt);
+
+        if(bit_idx_start == -1)
+        {
+            /* 申请失败 */
+            return NULL;
+        }
+        /* 对这pg_cnt个位赋值1，表示已经分配，避免重复分配 */
+        for(uint32_t i = 0; i < pg_cnt; i++)
+        {
+            bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, bit_idx_start + i, 1);
+        }
+        vaddr_start = cur->userprog_vaddr.vaddr_start + bit_idx_start * PAGE_SIZE;
+
+        /* 0xc0000000 - PAGE_SIZE 作为用户的三级栈空间已经被start_process被分配 */
+        ASSERT((uint32_t)vaddr_start < 0xc0000000 - PAGE_SIZE);
     }
     return (void*)vaddr_start;
 }
@@ -277,7 +299,7 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr)
         /* 页目录不存在，先创建页目录表项再创建页表项 */
 
         /* 在内核空间新键一个一级页表 */
-        uint32_t pte_phyaddr = (uint32_t)phy_alloc(&kerrnel_pool);
+        uint32_t pte_phyaddr = (uint32_t)phy_alloc(&kernel_pool);
         *pde = (pte_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
 
         /* 新分配的用于存放页表项的内存全部清0 */
@@ -285,8 +307,6 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr)
 
         *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
     }
-    
-
 }
 
 /********************************************************************
@@ -314,7 +334,9 @@ void* malloc_page(const pool_flags pf, const uint32_t pg_cnt)
     }
     
     uint32_t vaddr = (uint32_t)vaddr_start;
-    pool* mem_pool = pf == PF_KERNEL? &kerrnel_pool: &user_pool;
+
+    /* 物理地址上内核空间和用户空间也要分开 */
+    pool* mem_pool = pf == PF_KERNEL? &kernel_pool: &user_pool;
 
     /* 由于虚拟地址连续，物理地址不连续，所以分配物理地址时候逐个做 */
     for(uint32_t i = 0; i < pg_cnt; i++)
@@ -340,12 +362,95 @@ void* malloc_page(const pool_flags pf, const uint32_t pg_cnt)
  */
 void* get_kernel_pages(const uint32_t pg_cnt)
 {
+    lock_acquire(&kernel_pool.memory_lock);
     void* vaddr = malloc_page(PF_KERNEL, pg_cnt);
     if(vaddr != NULL)
     {
         memset(vaddr, 0, pg_cnt * PAGE_SIZE);
     }
+    lock_release(&kernel_pool.memory_lock);
     return vaddr;
+}
+
+/*********************************************
+ * 函数名:get_user_pages()
+ * pg_cnt:要申请的页面数
+ * 功能:在用户虚拟地址空间和物理内存上申请pg_cnt个页面，全部清零
+ * 返回值:返回虚拟地址
+ */
+void* get_user_pages(uint32_t pg_cnt)
+{
+    lock_acquire(&user_pool.memory_lock);
+    void* vaddr = malloc_page(PF_USER, pg_cnt);
+    /* 申请到的页面置空 */
+    if(vaddr != NULL)
+    {
+        memset(vaddr, 0, pg_cnt * PAGE_SIZE);
+    }
+    lock_release(&user_pool.memory_lock);
+    return vaddr;
+}
+
+/*****************************************************
+ * 函数名:get_a_page()
+ * pf:内核空间还是用户空间
+ * vaddr:要申请的虚拟地址
+ * 功能:申请一页内存，并把vaddr映射到该页内存上
+ * 返回值:成功返回vaddr,失败返回null
+ */ 
+void* get_a_page(pool_flags pf, uint32_t vaddr)
+{
+    pool* mem_pool = pf & PF_KERNEL? &kernel_pool: &user_pool;
+
+    lock_acquire(&mem_pool->memory_lock);
+
+    task_struct* cur = get_running_thread_pcb();
+    int32_t bit_idx = -1;
+
+    /* 用户进程申请用户内存，修改该进程自己的位图 */
+    if(cur->pgdir_vaddr != NULL && pf == PF_USER)
+    {
+        bit_idx = (vaddr = cur->userprog_vaddr.vaddr_start) / PAGE_SIZE;
+        ASSERT(bit_idx > 0);
+        bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, bit_idx, 1);
+    }
+    else if(cur->pgdir_vaddr == NULL && pf == PF_KERNEL)
+    {
+        /* 内核线程申请内核内存 */
+
+        bit_idx = (vaddr = kernel_vaddr.vaddr_start) / PAGE_SIZE;
+        ASSERT(bit_idx > 0);
+        bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx, 1);
+    }
+    else
+    {
+        PANIC("get a page \n not allow kernel alloc userspace or user \
+             alloc kernelspace by get a page\n");
+    }
+
+    void * page_phyaddr = phy_alloc(mem_pool);
+    if(page_phyaddr == NULL)
+    {
+        /* 失败的情况下也应该释放锁 */
+        return NULL;
+    }
+    page_table_add((void*)vaddr, page_phyaddr);
+    lock_release(&mem_pool->memory_lock);
+    return (void*)vaddr;
+}
+
+/*******************************************************
+ * 函数名:addr_v2p()
+ * vaddr:待转换的虚拟地址
+ * 功能:根据页表把vaddr转换成对应的物理地址
+ * 返回值:转换成功的物理地址
+ */ 
+uint32_t addr_v2p(uint32_t vaddr)
+{
+    uint32_t* pte = get_pte_ptr(vaddr);
+
+    /* 页表项内容去掉低12位得到物理页号，虚拟地址低12位是页内偏移地址 */
+    return ((*pte & 0xfffff000) + (vaddr & 0x00000fff));
 }
 
 /*****************************************************
@@ -360,8 +465,10 @@ void mem_init()
     /* total_mem_bytes 保存在0xb00处，占4个字节 */
     uint32_t total_mem_bytes = *((uint32_t*)(0xb00));
 
-    mem_pool_init(total_mem_bytes);
 
+    mem_pool_init(total_mem_bytes);
+    lock_init(&kernel_pool.memory_lock);
+    lock_init(&user_pool.memory_lock);
     put_str("mem init done \n");
     
 }
