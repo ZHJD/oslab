@@ -5,8 +5,8 @@
 #include "list.h"
 #include "debug.h"
 
-extern list* thread_ready_list;
-extern list* thread_all_list;
+extern list  thread_ready_list;
+extern list  thread_all_list;
 
 
 /***************************************
