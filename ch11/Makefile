@@ -4,7 +4,7 @@ AS = nasm
 CC = gcc
 LD = ld
 LIB = -I ./lib -I ./lib/string -I ./lib/kernel -I ./kernel -I ./device\
-	  -I ./kernel/thread -I kernel/semaphore/ -I ./userprogram/
+	  -I ./kernel/thread -I kernel/semaphore/ -I ./userprocess/
 ASFLAGS = -f elf32
 CFLAGS = -m32 -Wall $(LIB) -c -fno-builtin -fno-stack-protector
 LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main
@@ -17,7 +17,7 @@ OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
 			 $(BUILD_DIR)/set_cursor.o $(BUILD_DIR)/sync.o \
 			 $(BUILD_DIR)/console.o $(BUILD_DIR)/keyboard.o \
 			 $(BUILD_DIR)/semaphore.o $(BUILD_DIR)/ioqueue.o \
-			 $(BUILD_DIR)/tss.o
+			 $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o
 
 ###################   C代码编译  ########################################
 $(BUILD_DIR)/main.o: kernel/main.c
@@ -65,7 +65,10 @@ $(BUILD_DIR)/semaphore.o: kernel/semaphore/semaphore.c
 $(BUILD_DIR)/ioqueue.o: device/ioqueue.c
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/tss.o: userprogram/tss.c
+$(BUILD_DIR)/tss.o: userprocess/tss.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/process.o:userprocess/process.c
 	$(CC) $(CFLAGS) $< -o $@
 
 #################   汇编代码编译  ######################################
