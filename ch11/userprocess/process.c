@@ -1,7 +1,14 @@
 #include "process.h"
 #include "interrupt.h"
 #include "global.h"
+#include "console.h"
+#include "list.h"
 #include "debug.h"
+
+extern list* thread_ready_list;
+extern list* thread_all_list;
+
+
 /***************************************
  * 函数名:start_process()
  * filename_:创建的程序名字
@@ -10,6 +17,7 @@
  */
 void start_process(void* filename_)
 {
+    /* 制造中断现场假象，使用iretd指令进入用户态 */
     void* function = filename_;
     task_struct* cur = get_running_thread_pcb();
     cur->self_kstack += sizeof(thread_stack);
@@ -87,4 +95,100 @@ void process_activate(task_struct* pthread)
     {
         update_tss_esp0(pthread);
     }
+}
+
+/******************************************
+ * 函数名:vreate_page_dir()
+ * 功能:在内核空间创建用户进程的页目录表，
+ * 第768 - 1022项指向内核空间
+ * 返回值:页表虚拟地址
+ */ 
+uint32_t* create_page_dir(void)
+{
+    /* 用户的页表也放在内核空间 */
+    uint32_t* page_dir_vaddr = get_kernel_pages(1);
+
+    if(page_dir_vaddr == NULL)
+    {
+        console_put_str("create_page_dir: get kernel_page failed!\n");
+        return NULL;
+    }
+
+    /**************************** 1 先复制页表 ***************************
+     * page_dir_vaddr + 0x300 * 4 是内核页目录的第768项
+     * (1024 - 768) * 4 = 1024字节
+     */ 
+    memcpy((uint32_t*)((uint32_t)page_dir_vaddr + 0x300 * 4),
+            (uint32_t*)(0xfffff000 + 0x300 * 4),
+            1024 - 4);
+    
+    /*********************** 2 更新页目录地址 **************************/
+    uint32_t new_page_dir_phy_addr = addr_v2p((uint32_t)page_dir_vaddr);
+
+    /* 页目录表最后一项放自身的起始物理地址，偏于在内核中访问页表 */
+    page_dir_vaddr[1023] = new_page_dir_phy_addr | 
+                            PG_US_U |
+                            PG_RW_W |
+                            PG_P_1;
+    
+    return page_dir_vaddr;
+}
+
+/****************************************************************
+ * 函数名:create_user_vaddr_bitmap()
+ * user_prog:进程pcb
+ * 功能:在内核空间为该进程创建虚拟地址位图，并赋值给user_prog
+ * 的虚拟地址字段
+ * 返回值:无
+ */ 
+void create_user_vaddr_bitmap(task_struct* user_prog)
+{
+    /* 用户进程内存的起始地址 */
+    user_prog->userprog_vaddr.vaddr_start = USER_VADDR_START;
+
+    /* 位图所占页面数，已经向上取整 */
+    uint32_t bitmap_pg_cnt = DIV_ROUND_UP(
+        (0xc0000000 - USER_VADDR_START) / PAGE_SIZE / 8,
+        PAGE_SIZE
+    );
+
+    /* 位图在内核空间分配，位图起始地址 */
+    user_prog->userprog_vaddr.vaddr_bitmap.bits = get_kernel_pages(bitmap_pg_cnt);
+
+    /* 位图字节数 */
+    user_prog->userprog_vaddr.vaddr_bitmap.btmp_bytes_len = 
+         (0xc0000000 - USER_VADDR_START) / PAGE_SIZE / 8;
+    
+    /* 分配页面时已经清过0了 */
+    //bitmap_init(&user_prog->userprog_vaddr.vaddr_bitmap);
+}
+
+/*********************************************************
+ * 函数名:process_execute()
+ * filename: 用户程序文件名
+ * name:线程名字
+ * 功能:创建进程
+ * 返回值:无
+ */ 
+void process_execute(void* filename, char* name)
+{
+    /* 在内核空间为用户进程创建pcb */
+    task_struct* thread = get_kernel_pages(1);
+
+    /* 初始化线程 */
+    init_thread(thread, name, default_prio);
+
+    /* 创建用户进程的虚拟地址管理位图 */
+    create_user_vaddr_bitmap(thread);
+
+    /* 准备好线程栈和执行函数，start_process是线程要执行的函数 */
+    thread_create(thread, start_process, filename);
+
+    /* 设置进程的页目录表虚拟地址 */
+    thread->pgdir_vaddr = create_page_dir();
+
+    intr_status old_status = intr_disable();
+    list_push_back(&thread_ready_list, &thread->general_tag);
+    list_push_back(&thread_all_list, &thread->all_list_tag);
+    set_intr_status(old_status);
 }
