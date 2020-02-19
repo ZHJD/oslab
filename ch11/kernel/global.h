@@ -146,7 +146,7 @@ typedef struct gdt_desc
 #define EFLAGS_MBS  (1 << 1)
 
 /* 开中断 */
-#define EFLAGS_IF_! (1 << 9)
+#define EFLAGS_IF_1 (1 << 9)
 
 /* 关中断 */
 #define EFLAGS_IF_0 (1 << 9)
