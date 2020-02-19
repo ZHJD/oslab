@@ -2,7 +2,7 @@
 #include "global.h"
 #include "string.h"
 /* 任务状态段tss*/
-typedef struct tss
+struct tss
 {
     /* 用于回退到上个tss结构 */
     uint32_t back_link;
@@ -41,7 +41,7 @@ typedef struct tss
     
     /* io位图在tss中的偏移地址 */
     uint32_t  io_base;
-}tss;
+};
 
 static struct tss tss;
 
@@ -51,9 +51,9 @@ static struct tss tss;
  * 功能:设置esp0的值
  * 返回值:无
  */ 
-void inline update_tss_esp0(task_struct* pthread)
+void update_tss_esp0(task_struct* pthread)
 {
-    tss.eap0 = (uint32_t*)((uint32_t)pthread + PG_SIZE);
+    tss.esp0 = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
 }
 
 /********************************************************
@@ -65,16 +65,16 @@ void inline update_tss_esp0(task_struct* pthread)
  * 功能:构造一个全局段描述符
  * 返回值:desc描述符
  */ 
-static gdt_desc incline male_gdt_desc(const uint32_t* desc_addr,
-                                      const uint32_t limit,
-                                      const uint8_t attr_low,
-                                      const uint8_t attr_high)
+static gdt_desc make_gdt_desc(uint32_t* desc_addr,
+                              uint32_t limit,
+                              uint8_t attr_low,
+                              uint8_t attr_high)
 {
     uint32_t desc_base = (uint32_t)desc_addr;
     gdt_desc desc;
     desc.limit_low_word = limit & 0x0000ffff;
     desc.base_low_word  = desc_base & 0xffff0000;
-    desc.base_mid_byte  = (desc_base & 0x00ff0000) >> 16
+    desc.base_mid_byte  = (desc_base & 0x00ff0000) >> 16;
     desc.attr_low_byte  = attr_low;
     desc.limit_high_attr_high = 
                         ((uint8_t)((limit & 0x000f0000) >> 16)) |
@@ -107,29 +107,29 @@ void tss_init()
 
     /* tss 描述符 */
     gdt_desc* gdt_addr = (gdt_desc*)0xc0000920;
-    *gdt_addr = make_gdt_desc((uint32_t*)&tss,
-                              sizeof(tss) - 1,
-                              TSS_ATTR_LOW,
-                              TSS_ATTR_HIGH
+    *((gdt_desc*)0xc0000920) = make_gdt_desc(&tss,              
+                              sizeof(tss) - 1,  
+                              TSS_ATTR_LOW,     
+                              TSS_ATTR_HIGH     
                               );
     /* dpl3下的代码段 */
     gdt_addr = (gdt_desc*)((uint32_t)gdt_addr + 0x8);
-    *gdt_addt = make_gdt_desc((uint32_t*)0,
+    *gdt_addr = make_gdt_desc((uint32_t*)0,
                              0xfffff,
-                             GDT_CODE_ATTR_LOW_DPL#,
+                             GDT_CODE_ATTR_LOW_DPL3,
                              GDT_ATTR_HIGH
                              );
     /* dpl3下的数据段 */
     gdt_addr = (gdt_desc*)((uint32_t)gdt_addr + 0x8);
-    *gdt_addt = make_gdt_desc((uint32_t*)0,
+    *gdt_addr = make_gdt_desc((uint32_t*)0,
                              0xfffff,
-                             GDT_DATA_ATTR_LOW_DPL#,
+                             GDT_DATA_ATTR_LOW_DPL3,
                              GDT_ATTR_HIGH
                              );
 
     /* 低16位表示表的大小，高32位表示段描述符表基址 */
     uint64_t gdt_operand = ((8 * 7 - 1) | 
-                (uint64_t)0xc000900 << 16);
+                (uint64_t)((uint32_t)0xc000900 << 16));
     
     /* 重新加载gdt基址 */
     asm volatile ("lgdt %0"::"m"(gdt_operand));
