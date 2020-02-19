@@ -44,7 +44,7 @@
 	((IDT_DESC_P << 7) + (IDT_DESC_DPL3 << 5) + IDT_DESC_S + IDT_DESC_TYPE_386)
 
 
-#define NULL 0
+#define NULL ((void*)0)
 
 /* 定义页框大小 */
 #define PAGE_SIZE 4096
@@ -140,8 +140,23 @@ typedef struct gdt_desc
     uint8_t     base_high_byte;
 }gdt_desc;
 
+/**************************************************************************/
 
+/* 保留值，设为1 */
+#define EFLAGS_MBS  (1 << 1)
 
+/* 开中断 */
+#define EFLAGS_IF_! (1 << 9)
+
+/* 关中断 */
+#define EFLAGS_IF_0 (1 << 9)
+
+/* 2位 */
+#define EFLAGS_IOPL_3 (3 << 12)
+
+#define EFLAGS_IOPL_0 (0 << 12)
+
+#define DIV_ROUND_UP(X, STEP) ((X + STEP - 1) / (STEP))
 
 
 
