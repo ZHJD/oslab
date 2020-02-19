@@ -2,6 +2,7 @@
 #define __THREAD_THREAD_H
 #include "global.h"
 #include "list.h"
+#include "memory.h"
 
 /* 定义通用函数类型，它将在很多线程函数中作为形参参数 */
 typedef void thread_func(void*);
@@ -122,8 +123,11 @@ typedef struct task_struct
     /* 用于把线程加入所all_thread队列 */
     list_elem all_list_tag;
 
-    /* 进程的页表虚拟地址,如果是线程则为NULL */
-    uint32_t* pgvaddr;
+    /* 用户进程的虚拟地址 */
+    virtual_addr* userprog_vaddr;
+
+    /* 进程自己页表的虚拟地址 */
+    uint32_t* pgdir_vaddr;
 
     /* 栈的边界标记，用于检测栈的溢出*/
     uint32_t stack_magic;

@@ -1,6 +1,5 @@
 #include "thread.h"
 #include "string.h"
-#include "memory.h"
 #include "interrupt.h"
 #include "debug.h"
 
@@ -108,7 +107,7 @@ void init_thread(task_struct* pthread, char* name, int prio)
     /* 该线程尚未运行过 */
     pthread->elapsed_ticks = 0;
     
-    pthread->pgvaddr = NULL;
+    pthread->pgdir_vaddr = NULL;
     /* 线程栈顶在pcb所在页的最高地址处 */
     pthread->self_kstack = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
 
