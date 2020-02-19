@@ -94,14 +94,14 @@
 /******************* DESC 描述符*******************************************/
 /* DESC中高32位的20-23位 */
 #define GDT_ATTR_HIGH       ((DESC_G_4K << 7) + (DESC_D_32 << 6) + \
-                            (DESC_L << 5) + (DESC_AVL << 4))
+                            (DESC_L_32 << 5) + (DESC_AVL << 4))
 
 /* DESC中高32位的8-15位 */
 #define GDT_CODE_ATTR_LOW_DPL3 \
                             ((DESC_P << 7) + (DESC_DPL_3 << 5) + \
                             (DESC_S_CODE << 4) + DESC_TYPE_CODE)
 
-#define GDT_DATA_ATTR_LOW_DPL# \
+#define GDT_DATA_ATTR_LOW_DPL3 \
                             ((DESC_P << 7) + (DESC_DPL_3 << 5) + \
                             (DESC_S_DATA << 4) + DESC_TYPE_DATA)
 
@@ -112,7 +112,7 @@
 #define TSS_DESC_D          0
 
 #define TSS_ATTR_HIGH       ((DESC_G_4K << 7) + (TSS_DESC_D << 6) + \
-                            (DESC_L << 5) + (DESC_AVL << 4) + 0x0)
+                            (DESC_L_32 << 5) + (DESC_AVL << 4) + 0x0)
 
 #define TSS_ATTR_LOW        ((DESC_P << 7) + (DESC_DPL_0 << 5) + \
                             (DESC_S_SYS << 4) + DESC_TYPE_TSS)
