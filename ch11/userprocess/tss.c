@@ -2,7 +2,7 @@
 #include "global.h"
 #include "string.h"
 /* 任务状态段tss*/
-struct tss
+typedef struct tss
 {
     /* 用于回退到上个tss结构 */
     uint32_t back_link;
@@ -41,9 +41,9 @@ struct tss
     
     /* io位图在tss中的偏移地址 */
     uint32_t  io_base;
-};
+}tss;
 
-static struct tss tss;
+tss tss_struct;
 
 /******************************************************
  * 函数名:update_tss_esp0()
@@ -53,7 +53,7 @@ static struct tss tss;
  */ 
 void update_tss_esp0(task_struct* pthread)
 {
-    tss.esp0 = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
+    tss_struct.esp0 = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
 }
 
 /********************************************************
@@ -73,7 +73,7 @@ static gdt_desc make_gdt_desc(uint32_t* desc_addr,
     uint32_t desc_base = (uint32_t)desc_addr;
     gdt_desc desc;
     desc.limit_low_word = limit & 0x0000ffff;
-    desc.base_low_word  = desc_base & 0xffff0000;
+    desc.base_low_word  = desc_base & 0x0000ffff;
     desc.base_mid_byte  = (desc_base & 0x00ff0000) >> 16;
     desc.attr_low_byte  = attr_low;
     desc.limit_high_attr_high = 
@@ -92,12 +92,12 @@ static gdt_desc make_gdt_desc(uint32_t* desc_addr,
 void tss_init()
 {
     put_str("tss init start\n");
-    memset(&tss, 0, sizeof(tss));
+    memset(&tss_struct, 0, sizeof(tss_struct));
     /* 保护模式下段寄存器中保存选择子 */
-    tss.ss0 = SELECTOR_K_STACK;
+    tss_struct.ss0 = SELECTOR_K_STACK;
 
     /* io位图在tss中的偏移地址 */
-    tss.io_base = sizeof(tss);
+    tss_struct.io_base = sizeof(tss);
 
     /******************************************
      * gdt基址是0x900，第1个位置置0，第2-4个位置分别放了
@@ -107,8 +107,8 @@ void tss_init()
 
     /* tss 描述符 */
     gdt_desc* gdt_addr = (gdt_desc*)0xc0000920;
-    *((gdt_desc*)0xc0000920) = make_gdt_desc(&tss,              
-                              sizeof(tss) - 1,  
+    *((gdt_desc*)0xc0000920) = make_gdt_desc(&tss_struct,              
+                              sizeof(tss_struct) - 1,  
                               TSS_ATTR_LOW,     
                               TSS_ATTR_HIGH     
                               );
@@ -127,9 +127,9 @@ void tss_init()
                              GDT_ATTR_HIGH
                              );
 
-    /* 低16位表示表的大小，高32位表示段描述符表基址 */
+    /* 低16位表示表的大小，高32位表示段描述符表基址,必须写虚拟地址，后面会切换页表 */
     uint64_t gdt_operand = ((8 * 7 - 1) | 
-                (uint64_t)((uint32_t)0xc000900 << 16));
+                ((uint64_t)0xc0000900 << 16));
     
     /* 重新加载gdt基址 */
     asm volatile ("lgdt %0"::"m"(gdt_operand));
