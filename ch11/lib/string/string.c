@@ -19,7 +19,6 @@ void memset(void *dst_, uint8_t value, uint32_t size)
     {
         *(dst++) = value;
     }
-    put_str("\n\nmemset done!\n");
 }
 
 /******************************************************************************
