@@ -44,7 +44,6 @@ intr%1entry:		; 每个中断向量号对应一个中断处理程序，%1会被�
   
   ; 调用idt_table中c语言写的中断处理函数
   call [idt_table + %1 * 4]
-  add esp, 4   ;根据调用约定,跳过中断号
   jmp intr_exit
 
 section .data
@@ -55,6 +54,8 @@ section .data
 section .text
 global intr_exit
 intr_exit:
+
+  add esp, 4   ;根据调用约定,跳过中断号
   ; 下面恢复上下文环境
   popad
   pop gs
