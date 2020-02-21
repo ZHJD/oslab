@@ -281,6 +281,7 @@ static void page_table_add(void* _vaddr, void* _page_phyaddr)
     /* 判断页目录表中的p位是否为1 */
     if(*pde & 0x00000001)
     {
+
         ASSERT(!(*pte & 0x00000001));
 
         if(!(*pte & 0x00000001))
@@ -410,7 +411,7 @@ void* get_a_page(pool_flags pf, uint32_t vaddr)
     /* 用户进程申请用户内存，修改该进程自己的位图 */
     if(cur->pgdir_vaddr != NULL && pf == PF_USER)
     {
-        bit_idx = (vaddr = cur->userprog_vaddr.vaddr_start) / PAGE_SIZE;
+        bit_idx = (vaddr - cur->userprog_vaddr.vaddr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, bit_idx, 1);
     }
@@ -418,7 +419,7 @@ void* get_a_page(pool_flags pf, uint32_t vaddr)
     {
         /* 内核线程申请内核内存 */
 
-        bit_idx = (vaddr = kernel_vaddr.vaddr_start) / PAGE_SIZE;
+        bit_idx = (vaddr - kernel_vaddr.vaddr_start) / PAGE_SIZE;
         ASSERT(bit_idx > 0);
         bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx, 1);
     }
@@ -434,6 +435,8 @@ void* get_a_page(pool_flags pf, uint32_t vaddr)
         /* 失败的情况下也应该释放锁 */
         return NULL;
     }
+
+
     page_table_add((void*)vaddr, page_phyaddr);
     lock_release(&mem_pool->memory_lock);
     return (void*)vaddr;
