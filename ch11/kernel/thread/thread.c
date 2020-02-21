@@ -57,11 +57,14 @@ static void kernel_thread(thread_func* function, void* func_arg)
  */
 void thread_create(task_struct* pthread, thread_func* function, void* func_arg)
 {
+        
+    uint32_t intr_stack_size = sizeof(intr_stack);
     /* 为中断栈留出空间 */
-    pthread->self_kstack -= sizeof(intr_stack);
+    pthread->self_kstack = (uint32_t)pthread->self_kstack - intr_stack_size;
 
     /* 得到线程栈栈底 */
-    pthread->self_kstack -= sizeof(thread_stack);
+    pthread->self_kstack = (uint32_t)pthread->self_kstack - sizeof(thread_stack);
+
     thread_stack* kthread_stack = (thread_stack*)pthread->self_kstack;
 
     /* 通过ret指令进入kernel_thread */
@@ -111,7 +114,7 @@ void init_thread(task_struct* pthread, char* name, int prio)
     pthread->pgdir_vaddr = NULL;
     /* 线程栈顶在pcb所在页的最高地址处 */
     pthread->self_kstack = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
-
+    
     /* 魔数，用于检测栈顶指针是否进入pcb结构所在内存 */
     pthread->stack_magic = 0x19870916;
 }

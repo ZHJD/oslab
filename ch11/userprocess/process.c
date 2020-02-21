@@ -20,9 +20,13 @@ void start_process(void* filename_)
     /* 制造中断现场假象，使用iretd指令进入用户态 */
     void* function = filename_;
     task_struct* cur = get_running_thread_pcb();
-    cur->self_kstack += sizeof(thread_stack);
+    cur->self_kstack = (uint32_t)cur->self_kstack + sizeof(thread_stack);
     intr_stack* proc_stack = (intr_stack*)cur->self_kstack;
     
+    put_str("intr_stack: 0x");
+    put_int(sizeof(intr_stack));    
+    put_char('\n');    
+
     proc_stack->edi = 0;
     proc_stack->esi = 0;
     proc_stack->ebp = 0;
@@ -48,7 +52,7 @@ void start_process(void* filename_)
                                     PAGE_SIZE);
     
     put_str("esp:");
-    put_int((uint32_t)proc_stack->esp);
+    put_int((uint32_t)proc_stack);
     put_char('\n');
 
     proc_stack->ss = SELECTOR_U_DATA;
