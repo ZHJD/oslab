@@ -44,7 +44,13 @@ void start_process(void* filename_)
     proc_stack->eflags = (EFLAGS_IOPL_0 | EFLAGS_MBS | EFLAGS_IF_1);
 
     /* 用户态下栈顶地址是0xc0000000 */
-    proc_stack->esp = get_a_page(PF_USER, USER_STACK3_VADDR + PAGE_SIZE);
+    proc_stack->esp = (void*)((uint32_t)get_a_page(PF_USER, USER_STACK3_VADDR) +
+                                    PAGE_SIZE);
+    
+    put_str("esp:");
+    put_int((uint32_t)proc_stack->esp);
+    put_char('\n');
+
     proc_stack->ss = SELECTOR_U_DATA;
     asm volatile ("movl %0, %%esp; jmp intr_exit"::
                 "g"(proc_stack): "memory");
@@ -64,7 +70,7 @@ static void page_dir_activate(task_struct* pthread)
      */ 
 
     /* 内核页目录表起始地址 */
-    uint32_t pagedir_phy_addr = 0x10000;
+    uint32_t pagedir_phy_addr = 0x100000;
 
     if(pthread->pgdir_vaddr != NULL)
     {
