@@ -3,7 +3,7 @@
 
 #include "thread.h"
 /* 申请内存时使用的时当前页面的最低地址值 */
-#define USER_STACK3_VADDR (0xc0000000 - 0x1000)
+#define USER_STACK3_VADDR (0xc0000000 -  0x1000)
 
 /* linux 用户程序入口地址 */
 #define USER_VADDR_START 0x8048000
