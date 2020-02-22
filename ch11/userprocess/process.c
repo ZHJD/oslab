@@ -9,6 +9,14 @@ extern list  thread_ready_list;
 extern list  thread_all_list;
 
 
+/********************************
+ * 函数名:intr_exit()
+ * 功能:退出中断
+ * 返回值:无
+ */ 
+extern void intr_exit(void);
+
+
 /***************************************
  * 函数名:start_process()
  * filename_:创建的程序名字
@@ -20,13 +28,9 @@ void start_process(void* filename_)
     /* 制造中断现场假象，使用iretd指令进入用户态 */
     void* function = filename_;
     task_struct* cur = get_running_thread_pcb();
-    cur->self_kstack = (uint32_t)cur->self_kstack + sizeof(thread_stack);
+    cur->self_kstack = (uint32_t*)((uint32_t)cur->self_kstack + sizeof(thread_stack));
     intr_stack* proc_stack = (intr_stack*)cur->self_kstack;
     
-    put_str("intr_stack: 0x");
-    put_int(sizeof(intr_stack));    
-    put_char('\n');    
-
     proc_stack->edi = 0;
     proc_stack->esi = 0;
     proc_stack->ebp = 0;
@@ -51,9 +55,6 @@ void start_process(void* filename_)
     proc_stack->esp = (void*)((uint32_t)get_a_page(PF_USER, USER_STACK3_VADDR) +
                                     PAGE_SIZE);
     
-    put_str("esp:");
-    put_int((uint32_t)proc_stack);
-    put_char('\n');
 
     proc_stack->ss = SELECTOR_U_DATA;
     asm volatile ("movl %0, %%esp; jmp intr_exit"::
@@ -130,8 +131,9 @@ uint32_t* create_page_dir(void)
      */ 
     memcpy((uint32_t*)((uint32_t)page_dir_vaddr + 0x300 * 4),
             (uint32_t*)(0xfffff000 + 0x300 * 4),
-            1024 - 4);
-    
+            1024);
+
+
     /*********************** 2 更新页目录地址 **************************/
     uint32_t new_page_dir_phy_addr = addr_v2p((uint32_t)page_dir_vaddr);
 
@@ -158,7 +160,7 @@ void create_user_vaddr_bitmap(task_struct* user_prog)
 
     /* 位图所占页面数，已经向上取整 */
     uint32_t bitmap_pg_cnt = DIV_ROUND_UP(
-        (0xc0000000 - USER_VADDR_START) / PAGE_SIZE / 8,
+        (0xc0000000 - USER_VADDR_START) / PAGE_SIZE / 8, // 需要分配的字节数
         PAGE_SIZE
     );
 
@@ -170,7 +172,7 @@ void create_user_vaddr_bitmap(task_struct* user_prog)
          (0xc0000000 - USER_VADDR_START) / PAGE_SIZE / 8;
     
     /* 分配页面时已经清过0了 */
-    //bitmap_init(&user_prog->userprog_vaddr.vaddr_bitmap);
+    bitmap_init(&user_prog->userprog_vaddr.vaddr_bitmap);
 }
 
 /*********************************************************
