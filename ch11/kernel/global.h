@@ -23,7 +23,7 @@
 
 /* 特权级3下的选咋子  */
 #define SELECTOR_U_CODE     ((0x5 << 3) + (TI_GDT << 2) + RPL3);
-#define SELECTOR_U_DATA     ((0x6 << 3) + (TI_LDT << 2) + RPL3);
+#define SELECTOR_U_DATA     ((0x6 << 3) + (TI_GDT << 2) + RPL3);
 #define SELECTOR_U_STACK    SELECTOR_U_DATA
 
 
