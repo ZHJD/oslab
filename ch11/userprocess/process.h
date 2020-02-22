@@ -9,7 +9,7 @@
 #define USER_VADDR_START 0x8048000
 
 /* 用户进程默认优先级 */
-#define default_prio     10
+#define default_prio     1
 
 /********************************************************************
  * 函数名:process_activate()
