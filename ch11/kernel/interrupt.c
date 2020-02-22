@@ -145,7 +145,7 @@ static void make_idt_desc(struct gate_desc *p_gdesc, uint8_t attr, intr_handler 
     p_gdesc->selector = SELECTOR_K_CODE; // SELECTION_K_CODE 定义在global.h中，指向内核数据段中的代码段的选择子
     p_gdesc->dcount = 0;
     p_gdesc->attribute = attr;
-    p_gdesc->func_offset_high_word = (uint32_t)function & 0xffff0000;
+    p_gdesc->func_offset_high_word =((uint32_t)function & 0xffff0000) >> 16;
 }
 
 static void idt_desc_init(void)
@@ -191,7 +191,7 @@ void idt_init(void)
     pic_init();       // 初始化8259A
 
     // 加载idt
-    uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)((uint32_t)idt << 16)));
+    uint64_t idt_operand = ((sizeof(idt) - 1) | ((uint64_t)idt << 16));
     asm volatile("lidt %0"
                  :
                  : "m"(idt_operand));

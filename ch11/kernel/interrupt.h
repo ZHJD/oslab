@@ -19,13 +19,6 @@ typedef enum intr_status
     INTR_ON
 }intr_status;
 
-/********************************
- * 函数名:intr_exit()
- * 功能:退出中断
- * 返回值:无
- */ 
-void intr_exit(void);
-
 /************************************
  * 函数名:intr_get_status()
  * 功能:获取中断状态
