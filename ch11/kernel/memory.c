@@ -401,7 +401,7 @@ void* get_user_pages(uint32_t pg_cnt)
  */ 
 void* get_a_page(pool_flags pf, uint32_t vaddr)
 {
-    pool* mem_pool = pf & PF_KERNEL? &kernel_pool: &user_pool;
+    pool* mem_pool = pf == PF_KERNEL? &kernel_pool: &user_pool;
 
     lock_acquire(&mem_pool->memory_lock);
 
@@ -429,7 +429,7 @@ void* get_a_page(pool_flags pf, uint32_t vaddr)
              alloc kernelspace by get a page\n");
     }
 
-    void * page_phyaddr = phy_alloc(mem_pool);
+    void* page_phyaddr = phy_alloc(mem_pool);
     if(page_phyaddr == NULL)
     {
         /* 失败的情况下也应该释放锁 */
