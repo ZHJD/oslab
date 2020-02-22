@@ -21,10 +21,10 @@ int main(void) {
     put_str("I am a kernel.\n");
     init_all();
      
-//    thread_start("fun1", 31, func1, " 1_ ");
-//    thread_start("fun2", 31, func2, " 2_ ");
-    process_execute(prog_a, "prog_a");
-//    process_execute(prog_b, "prog_b");
+     thread_start("fun1", 31, func1, " 1_ ");
+     thread_start("fun2", 31, func2, " 2_ ");
+      process_execute(prog_a, "prog_a");
+      process_execute(prog_b, "prog_b");
     
     intr_enable();
     while(1);
