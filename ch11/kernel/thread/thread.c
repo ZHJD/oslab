@@ -60,10 +60,10 @@ void thread_create(task_struct* pthread, thread_func* function, void* func_arg)
         
     uint32_t intr_stack_size = sizeof(intr_stack);
     /* 为中断栈留出空间 */
-    pthread->self_kstack = (uint32_t)pthread->self_kstack - intr_stack_size;
+    pthread->self_kstack = (uint32_t*)((uint32_t)pthread->self_kstack - intr_stack_size);
 
     /* 得到线程栈栈底 */
-    pthread->self_kstack = (uint32_t)pthread->self_kstack - sizeof(thread_stack);
+    pthread->self_kstack = (uint32_t*)((uint32_t)pthread->self_kstack - sizeof(thread_stack));
 
     thread_stack* kthread_stack = (thread_stack*)pthread->self_kstack;
 
