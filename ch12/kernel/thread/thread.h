@@ -4,6 +4,9 @@
 #include "list.h"
 #include "memory.h"
 
+
+typedef int16_t pid_t;
+
 /* 定义通用函数类型，它将在很多线程函数中作为形参参数 */
 typedef void thread_func(void*);
 
@@ -101,7 +104,9 @@ typedef struct task_struct
 {
     /* 线程内核栈的栈顶 */
     uint32_t* self_kstack;
-    
+   
+    pid_t pid;
+
     /* 线程状态 */
     task_status status;
 

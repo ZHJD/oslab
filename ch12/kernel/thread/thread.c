@@ -3,6 +3,7 @@
 #include "interrupt.h"
 #include "debug.h"
 #include "process.h"
+#include "sync.h"
 
 /* 主线程pcb */
 task_struct* main_thread;
@@ -16,8 +17,20 @@ list thread_all_list;
 /* 用于保存队列中的线程结点 */
 list_elem* thread_tag;
 
+/* pid锁 */
+lock pid_lock;
+
 extern void switch_to(task_struct* cur, task_struct* next);
 
+/* 分配pid  */
+static pid_t allocate_pid(void)
+{
+    static pid_t next_pid = -1;
+    lock_acquire(&next_pid);
+    next_pid++;
+    lock_release(&next_pid);
+    return next_pid;
+}
 
 /************************************************
  * 函数名:get_running_thread_pcb()
@@ -91,6 +104,7 @@ void init_thread(task_struct* pthread, char* name, int prio)
 {
     /* 清空线程运行环境所在的页 */
     memset(pthread, 0, sizeof(*pthread));
+    pthread->pid = allocate_pid();
     strcpy(pthread->name, name);
 
     if(pthread == main_thread)
@@ -287,6 +301,9 @@ void thread_init(void)
     put_str("thread init start \n");
     list_init(&thread_ready_list);
     list_init(&thread_all_list);
+    
+    /* 初始化锁 */
+    lock_init(&pid_lock);
     /* 把当前main创建为线程 */
     make_main_thread();
     put_str("thread init end\n");
