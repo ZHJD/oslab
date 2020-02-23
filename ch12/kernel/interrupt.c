@@ -5,7 +5,10 @@
 #include "io.h"
 
 
-#define IDT_DESC_CNT 0x30 // 目前总共支持的中断数,共33个中断处理程序
+
+#define IDT_DESC_CNT 0x81 // 目前总共支持的中断数,共33个中断处理程序
+
+extern uint32_t syscall_handler(void);
 
 /*eflags的if位为1，表示开中断，if大写也表示 */
 #define EFLAGS_IF 0x00000200
@@ -156,6 +159,8 @@ static void idt_desc_init(void)
         // IDT_DESC_ATTR_DPL0 定义在global.h中
         make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
     }
+    /* 单独处理系统调用，系统调用的中断门dpl为3 */
+    make_idt_desc(&idt[0x80], IDT_DESC_ATTR_DPL3, syscall_handler);
     put_str(" idt_desc_init done\n");
 }
 
