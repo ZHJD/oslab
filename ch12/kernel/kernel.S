@@ -3,6 +3,33 @@
             						  ; 则什么也不做
 %define ZERO push 0		    ; 如果该中断cpu不会向栈中压入error_code,
 						              ; 则手动压入32位0，进行占位
+[bits 32]
+extern syscall_table
+section .text
+global syscall_handler
+syscall_handler:
+    ; 保存上下文环境
+    push 0    ; 统一上下文环境
+    push ds
+    push es
+    push fs
+    push gs
+
+    pushad
+    
+    push 0x80 ; 压入中断号统一格式
+    
+   ; 为系统调用功能压入参数
+    push edx    ; 系统调用中第3个参数
+    push ecx    ; 系统调用中第2个参数
+    push ebx    ; 系统调用中第1个参数
+    
+    call [syscall_table + eax * 4];
+    add esp, 12
+    
+    ; 将call调用后的返回值存入当前内核栈中eax的位置，作为返回值
+    mov [esp + 8*4], eax
+    jmp intr_exit 
 
 extern idt_table          ; 声明在c语言中定义的中断处理函数表
 extern put_str 			      ; 声明外部函数
