@@ -7,6 +7,7 @@
 #include "console.h"
 #include "keyboard.h"
 #include "tss.h"
+#include "syscall_init.h"
 
 // 负责初始化所有模块
 void init_all(void)
@@ -20,6 +21,6 @@ void init_all(void)
     thread_init();   
     console_init(); // 控制台初始化
     keyboard_init();
-
+    syscall_init();
     tss_init();
 }
