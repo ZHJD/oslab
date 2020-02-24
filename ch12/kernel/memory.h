@@ -3,6 +3,32 @@
 
 #include "global.h"
 #include "bitmap.h"
+#include "list.h"
+
+/* 内存块，存储在每个空闲内存块起始地址处 */
+typedef struct mem_block
+{
+    /* 链接空闲内存块,通过free_elem反向推导出内存块地址 */
+    list_elem free_elem;
+}mem_block;
+
+/* 内存块描述符 */
+typedef struct mem_block_desc
+{
+    /* 内存块大小 */
+    uint32_t block_size;
+
+    /* 每个arena包含多少mem_block */
+    uint32_t blocks_pre_arena;
+    
+    /* 目前可用的mem_block链接 */  
+    struct list free_list;
+}mem_block_desc;
+
+/* 定义7个内存块描述符 */
+#define DESC_CNT 7
+
+
 
 /* 虚拟地址池，用于虚拟地址管理, 虚拟内存没有设置大小 */
 typedef struct virtual_addr
@@ -89,5 +115,11 @@ void* get_user_pages(uint32_t pg_cnt);
  * 返回值:成功返回vaddr,失败返回null
  */ 
 void* get_a_page(pool_flags pf, uint32_t vaddr);
+
+/* 初始化空闲内存块，共7种不同的规格 */
+void block_desc_init(mem_block_desc* desc_array);
+
+/* 在堆中申请size字节内存 */
+void* sys_malloc(uint32_t size);
 
 #endif
