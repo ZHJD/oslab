@@ -198,6 +198,9 @@ void process_execute(void* filename, char* name)
 
     /* 设置进程的页目录表虚拟地址 */
     thread->pgdir_vaddr = create_page_dir();
+    
+    /* 初始化用户进程内存空闲块 */
+    block_desc_init(thread->u_block_desc);
 
     intr_status old_status = intr_disable();
     list_push_back(&thread_ready_list, &thread->general_tag);
