@@ -3,6 +3,13 @@
 
 #include "global.h"
 
+/* 获取结构体成员在结构体中的偏移量 */
+#define offset(struct_type, member) (uint32_t)(&((struct_type*)0)->member)
+
+/* 由结构体成员地址得到结构体变量起始地址 */
+#define elem2entry(struct_type, struct_member_name, elem_ptr) \
+        (struct_type*)((uint32_t)elem_ptr - offset(struct_type, struct_member_name))
+
 
 
 /********** 定义链表结点成员结构 **************
