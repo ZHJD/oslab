@@ -134,8 +134,11 @@ typedef struct task_struct
     /* 进程的页表虚拟地址,如果是线程则为NULL */
     uint32_t* pgdir_vaddr;
 
+    /* 用户进程内存块描述符 */
+    mem_block_desc u_block_desc[DESC_CNT];
+
     /* 栈的边界标记，用于检测栈的溢出*/
-    uint32_t stack_magic;
+    uint32_t stack_magic;    
 }task_struct;
 
 
