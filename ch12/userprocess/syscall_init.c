@@ -1,3 +1,4 @@
+#include "syscall_init.h"
 #include "syscall.h"
 #include "thread.h"
 #include "console.h"
