@@ -26,9 +26,9 @@ extern void switch_to(task_struct* cur, task_struct* next);
 static pid_t allocate_pid(void)
 {
     static pid_t next_pid = -1;
-    lock_acquire(&next_pid);
+    lock_acquire(&pid_lock);
     next_pid++;
-    lock_release(&next_pid);
+    lock_release(&pid_lock);
     return next_pid;
 }
 
