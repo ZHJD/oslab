@@ -122,4 +122,6 @@ void block_desc_init(mem_block_desc* desc_array);
 /* 在堆中申请size字节内存 */
 void* sys_malloc(uint32_t size);
 
+/* 回收内存 */
+void sys_free(void* ptr);
 #endif
