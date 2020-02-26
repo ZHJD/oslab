@@ -10,6 +10,8 @@
 #include "stdio.h"
 #include "syscall.h"
 
+
+
 void func1(void* arg);
 void func2(void* arg);
 void prog_a();
@@ -22,8 +24,8 @@ int main(void) {
     put_str("I am a kernel.\n");
     init_all();
      
-       thread_start("fun1", 31, func1, " 1_ ");
-       thread_start("fun2", 31, func2, " 2_ ");
+    //   thread_start("fun1", 31, func1, " 1_ ");
+      // thread_start("fun2", 31, func2, " 2_ ");
        process_execute(prog_a, "prog_a");
 //       process_execute(prog_b, "prog_b");
     
@@ -52,7 +54,24 @@ void func2(void* arg)
 
 void prog_a()
 {
-    printf("pid is %d\n", getpid());
+    for(int i = 0; i < 3; i++)
+    {
+         void* addr1 = malloc(256);
+         printf("addr1 0x%x\n", addr1);
+         free(addr1);
+    }
+
+    void* addr2 = malloc(256);
+    
+    void* addr3 = malloc(16);
+
+    printf("addr2 0x%x\n", addr2);
+
+    printf("addr3 0x%x\n", addr3);
+
+    free(addr2);
+    free(addr3);
+    while(1);
 }
 
 void prog_b()
