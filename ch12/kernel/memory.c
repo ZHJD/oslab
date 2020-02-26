@@ -690,11 +690,6 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
             vaddr += PAGE_SIZE;
             pg_phy_addr = addr_v2p(vaddr);
 
-            /* 确保释放的内存位于内核空间 */
-            ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
-                pg_phy_addr >= kernel_pool.phy_addr_start &&
-                pg_phy_addr < user_pool.phy_addr_start);
-
             pfree(pg_phy_addr);
 
             page_table_pte_remove(vaddr);
@@ -711,6 +706,11 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
             vaddr += PAGE_SIZE;
             pg_phy_addr = addr_v2p(vaddr);
 
+            /* 确保释放的内存位于内核空间 */
+            ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
+                pg_phy_addr >= kernel_pool.phy_addr_start &&
+                pg_phy_addr < user_pool.phy_addr_start);
+            
             pfree(pg_phy_addr);
 
             page_table_pte_remove(vaddr);
@@ -759,8 +759,8 @@ void sys_free(void* ptr)
             {
                 /* 如果该arena全部没有被分配出去,置空对应的链表 */
                 list_init(&a->desc->free_list);
+                mfree_page(PF, a, 1);
             }
-            mfree_page(PF, a, 1);
         }
         lock_release(&mem_pool->memory_lock);
     }
