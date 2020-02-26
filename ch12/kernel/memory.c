@@ -615,6 +615,157 @@ void* sys_malloc(uint32_t size)
     }
 }
 
+/* 回收物理地址pg_phy_addr所在的页框 */
+void pfree(uint32_t pg_phy_addr)
+{
+    pool* mem_pool;
+    uint32_t bit_idx = 0;
+
+    /* 如果是用户区域 */
+    if(pg_phy_addr >= user_pool.phy_addr_start)
+    {
+        mem_pool = &user_pool;
+        bit_idx = (pg_phy_addr - user_pool.phy_addr_start) / PAGE_SIZE;
+    }
+    else
+    {
+        mem_pool = &kernel_pool;
+        bit_idx = (pg_phy_addr - kernel_pool.phy_addr_start) / PAGE_SIZE;
+    }
+    bitmap_set(&mem_pool->pool_bitmap, bit_idx, 0);
+}
+
+/* 去掉页表中虚拟地址vaddrd的映射，只去掉vaddr对应的pte */
+static void page_table_pte_remove(uint32_t vaddr)
+{
+    uint32_t* pte = get_pte_ptr(vaddr);
+    /* pte位置0，表示该页面不存在 */
+    *pte &= ~PG_P_1;
+    asm volatile ("invlpg %0":: "m"(vaddr): "memory");
+}
+
+/*  在虚拟地址池中释放以_vaddr开始的连续pg_cnt个虚拟页地址 */
+static void vaddr_remove(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
+{
+    uint32_t bit_idx_start = 0;
+    uint32_t vaddr = (uint32_t)_vaddr;
+    if(pf == PF_KERNEL)
+    {
+        bit_idx_start = (vaddr - kernel_vaddr.vaddr_start) / PAGE_SIZE;
+        for(uint32_t cnt = 0; cnt < pg_cnt; cnt++)
+        {
+            bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt, 0);
+        }
+    }
+    else
+    {
+        task_struct* cur_thread = get_running_thread_pcb();
+        bit_idx_start = (vaddr - cur_thread->userprog_vaddr.vaddr_start) / PAGE_SIZE;
+        for(uint32_t cnt = 0; cnt < pg_cnt; cnt++)
+        {
+            bitmap_set(&cur_thread->userprog_vaddr.vaddr_bitmap, bit_idx_start + cnt, 0);
+        }
+    }  
+}
+
+/* 释放以vaddr为起始地址的cnt个物理页框 */
+void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
+{
+    uint32_t pg_phy_addr;
+    uint32_t vaddr = (uint32_t)_vaddr;
+    uint32_t cnt = 0;
+    ASSERT(pg_cnt >= 1 && vaddr % PAGE_SIZE == 0);
+    pg_phy_addr = addr_v2p(vaddr);
+
+    /* 低端1MB内存，1KB页目录表，1KB页表 */
+    ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
+        pg_phy_addr >= 0x102000);
+
+    /* 位于用户内存区 */
+    if(pg_phy_addr >= user_pool.phy_addr_start)
+    {
+        vaddr -= PAGE_SIZE;
+        while(cnt < pg_cnt)
+        {
+            vaddr += PAGE_SIZE;
+            pg_phy_addr = addr_v2p(vaddr);
+
+            /* 确保释放的内存位于内核空间 */
+            ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
+                pg_phy_addr >= kernel_pool.phy_addr_start &&
+                pg_phy_addr < user_pool.phy_addr_start);
+
+            pfree(pg_phy_addr);
+
+            page_table_pte_remove(vaddr);
+
+            cnt++;
+        }
+        vaddr_remove(pf, _vaddr, pg_cnt); 
+    }
+    else
+    {
+        vaddr -= PAGE_SIZE;
+        while(cnt < pg_cnt)
+        {
+            vaddr += PAGE_SIZE;
+            pg_phy_addr = addr_v2p(vaddr);
+
+            pfree(pg_phy_addr);
+
+            page_table_pte_remove(vaddr);
+            
+            pg_cnt++;
+        }
+        vaddr_remove(pf, _vaddr, pg_cnt);    
+    }
+}
+
+/* 回收内存 */
+void sys_free(void* ptr)
+{
+    ASSERT(ptr != NULL);
+    if(ptr != NULL)
+    {
+        pool_flags PF;
+        pool* mem_pool;
+
+        /* 判断是线程还是进程 */
+        if(get_running_thread_pcb()->pgdir_vaddr == NULL)
+        {
+            ASSERT((uint32_t)ptr >= K_HeAP_START);
+            PF = PF_KERNEL;
+            mem_pool = &kernel_pool;
+        }
+        else
+        {
+            PF = PF_USER;
+            mem_pool = &user_pool;
+        }
+
+        lock_acquire(&mem_pool->memory_lock);
+        mem_block* b = ptr;
+        arena* a = block2arena(b);
+
+        /* 大内存块 */
+        if(a->desc == NULL && a->large == true)
+        {
+            mfree_page(PF, a, a->cnt);
+        }
+        else // 小内存块
+        {
+            list_push_back(&a->desc->free_list, &b->free_elem);
+            if(++a->cnt == a->desc->blocks_pre_arena)
+            {
+                /* 如果该arena全部没有被分配出去,置空对应的链表 */
+                list_init(&a->desc->free_list);
+            }
+            mfree_page(PF, a, 1);
+        }
+        lock_release(&mem_pool->memory_lock);
+    }
+}
+
 /*****************************************************
  * 函数名:mem_init()
  * 功能:空闲内存管理系统入口
