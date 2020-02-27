@@ -5,6 +5,9 @@
 #include "process.h"
 #include "sync.h"
 
+/* idle线程,系统空闲的时候运行 */
+task_struct* idle_thread;
+
 /* 主线程pcb */
 task_struct* main_thread;
 
@@ -21,6 +24,20 @@ list_elem* thread_tag;
 lock pid_lock;
 
 extern void switch_to(task_struct* cur, task_struct* next);
+
+/* 就绪队列为空时执行该进程 */
+static void idle(void* arg)
+{
+    while(true)
+    {
+        /* 被创建后立即处于阻塞状态，如果就绪队列为空，唤醒该进程 */
+        thread_block(TASK_BLOCKED);
+
+        /* 执行hit指令前先开中断,hit指令执行后cpu利用率为%0 */
+        asm volatile ("sti; hlt": : : "memory");
+    }
+}
+
 
 /* 分配pid  */
 static pid_t allocate_pid(void)
@@ -193,6 +210,19 @@ static void make_main_thread(void)
     list_push_back(&thread_all_list, &main_thread->all_list_tag);
 }
 
+/* 主动让出cpu */
+void thread_yield(void)
+{
+    task_struct* cur = get_running_thread_pcb();
+    intr_status old_status = intr_disable();
+
+    /* 添加到就绪队列当中 */
+    list_push_back(&thread_ready_list, &cur->general_tag);
+    cur->status = TASK_READY;
+    schedule();
+    set_intr_status(old_status);
+}
+
 /***************************************************
  * 函数名:schedule()
  * 功能:实现任务调度
@@ -223,8 +253,12 @@ void schedule(void)
        // put_str("\nblock\n");
     }
         
-    /* 就绪队列不空 */
-    ASSERT(!list_empty(&thread_ready_list));
+    /* 如果就绪队列为空，唤醒idle_thread */
+    if(list_empty(&thread_ready_list))
+    {
+        thread_unblock(idle_thread);
+    }
+
     /* 用于保存队列中的线程结点 */
     list_elem* thread_tag = list_pop_head(&thread_ready_list);
 
@@ -306,5 +340,9 @@ void thread_init(void)
     lock_init(&pid_lock);
     /* 把当前main创建为线程 */
     make_main_thread();
+    
+    /* 创建idle线程  */
+    idle_thread = thread_start("idle", 10, idle, NULL);
+    
     put_str("thread init end\n");
 }
