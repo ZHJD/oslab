@@ -2,15 +2,6 @@
 #include "string.h"
 #include "syscall.h"
 
-/* 把ap指向第一个固定参数v的地址 */
-#define va_start(ap, v) ap = (va_list)&v
-
-/* ap指向下一个参数并返回值 */
-#define va_arg(ap, t) *((t*)(ap += 4))
-
-/* 清除ap */
-#define va_end(ap) ap = NULL
-
 /* 整型转换成字符(integer to ascii),更新buf_ptr_addr值 */
 static void itoa(uint32_t value, char** buf_ptr_addr, uint8_t base)
 {
