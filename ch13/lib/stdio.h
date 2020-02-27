@@ -2,6 +2,8 @@
 #define __LIB_STDIO_H
 #include "global.h"
 
+
+
 /* 定义字符指针 */
 typedef char* va_list;
 
@@ -20,5 +22,8 @@ uint32_t vsprintf(char* str, const char* format, va_list ap);
 
 /* 格式化输出字符串format */
 uint32_t printf(const char* format, ...);
+
+/* 各种类型转换为char*  */
+void sprintf(char* str, const char* format, ...);
 
 #endif
