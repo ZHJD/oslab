@@ -180,9 +180,11 @@ static void pic_init(void)
     outb(PIC_S_DATA, 0x02);
     outb(PIC_S_DATA, 0x01);
 
-    // 打开时钟中断和键盘中断
-    outb(PIC_M_DATA, 0xfc);
-    outb(PIC_S_DATA, 0xff);
+    // 打开时钟中断和键盘中断,IRQ2级联从片
+    outb(PIC_M_DATA, 0xf8);
+
+    /* 打开IRQ14 */
+    outb(PIC_S_DATA, 0xbf);
 
     put_str(" pic_init done\n");
 }
