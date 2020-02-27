@@ -101,3 +101,14 @@ uint32_t printf(const char* format, ...)
     /* 返回写入字符串的长度 */
     return write(buf);
 }
+
+/* 各种类型转换为char*  */
+void sprintf(char* str, const char* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    char buf[1024] = {'\0'};
+    vsprintf(buf, format, args);
+    va_end(args);
+    strcpy(str, buf);
+}
