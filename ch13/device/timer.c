@@ -6,8 +6,11 @@
 #include "debug.h"
 #include "global.h"
 
-/*计数器频率，中断频率*/
+/*计数器频率，中断频率,每秒钟端数*/
 #define IRQ0_FREQUENCY     100
+
+/* 中断周期为10ms */
+#define mil_seconds_per_intr 1000 / IRQ0_FREQUENCY
 
 /*计数器的工作脉冲信号频率 */
 #define INPUT_FREQUENCY    1193180      
@@ -95,6 +98,28 @@ static void intr_timer_handler(void)
     }
     
 }
+
+/* 以tick为单位sleep,任何时间形式的sleep都转换为tick形式 */
+static void ticks_to_sleep(uint32_t sleep_ticks)
+{
+    uint32_t start_tick = ticks;
+    
+    /* 当间隔时间小于sleep_ticks时， 让出cpu,不是特别准确 */
+    while(ticks - start_tick < sleep_ticks)
+    {
+        thread_yield();
+    }
+}
+
+
+/* 以ms为单位的顺眠函数  */
+void mtime_sleep(uint32_t m_seconds)
+{
+    /* 转化为中断次数  */
+    uint32_t sleep_ticks = DIV_ROUND_UP(m_seconds, mil_seconds_per_intr);
+    ticks_to_sleep(sleep_ticks);
+}
+
 
 /************************************************************
  * 函数名：timer_init()
