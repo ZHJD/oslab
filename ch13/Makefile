@@ -19,7 +19,8 @@ OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
 			 $(BUILD_DIR)/semaphore.o $(BUILD_DIR)/ioqueue.o \
 			 $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o       \
 			 $(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/syscall.o \
-			 $(BUILD_DIR)/stdio.o
+			 $(BUILD_DIR)/stdio.o $(BUILD_DIR)/ide.o 			\
+			 $(BUILD_DIR)/stdio_kernel.o
 
 ###################   C代码编译  ########################################
 $(BUILD_DIR)/main.o: kernel/main.c
@@ -80,6 +81,12 @@ $(BUILD_DIR)/syscall.o: lib/user/syscall.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/stdio.o: lib/stdio.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/ide.o: device/ide.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/stdio_kernel.o: lib/kernel/stdio_kernel.c
 	$(CC) $(CFLAGS) $< -o $@
 
 #################   汇编代码编译  ######################################
