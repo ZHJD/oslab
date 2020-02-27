@@ -186,4 +186,7 @@ void thread_block(const task_status stat);
  */ 
 void thread_unblock(task_struct* pthread);
 
+/* 主动让出cpu */
+void thread_yield(void);
+
 #endif
