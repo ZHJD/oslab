@@ -1,14 +1,15 @@
 #include "ide.h"
 #include "stdio_kernel.h"
 #include "debug.h"
-
-
+#include "io.h"
+#include "timer.h"
+#include "interrupt.h"
 
 /* 定义硬盘各寄存器的端口号 */
 #define reg_data(channel)       (channel->port_base + 0)
 #define reg_error(channel)      (channel->port_base + 1)
 #define reg_sect_cnt(channel)   (channel->port_base + 2)
-#define reg_lba_I(channel)      (channel->port_base + 3)
+#define reg_lba_l(channel)      (channel->port_base + 3)
 #define reg_lba_m(channel)      (channel->port_base + 4)
 #define reg_lba_h(channel)      (channel->port_base + 5)
 #define reg_dev(channel)        (channel->port_base + 6)
@@ -43,6 +44,226 @@ uint8_t channel_cnt;
 
 /* 两个ide通道 */
 ide_channel channels[2];
+
+/* 选择读写的硬盘 */
+static void select_disk(disk* hd)
+{
+    /* 启用lba */
+    uint8_t reg_device = BIT_DEV_MBS | BIT_DEV_LBA;
+    /* 从盘dev位置1 */
+    if(hd->dev_no == 1)
+    {
+        reg_device |= BIT_DEV_DEV;
+    }
+    /* 通道分主从，区别在端口号不同，硬盘也分主从,区别在device寄存器 */
+    outb(reg_dev(hd->my_channel), reg_device);
+}
+
+/* 向控制器写入要读取和写入的起始扇区地址以及要读写的扇区数 */
+static void select_sector(disk* hd, uint32_t lba, uint8_t sec_cnt)
+{
+    ASSERT(lba <= max_lba);
+    ide_channel* channel = hd->my_channel;
+
+    /* 写入要读写的扇区数 */
+    outb(reg_sect_cnt(hd->my_channel), sec_cnt);
+
+    /* 写入lba地址 */
+    outb(reg_lba_l(hd->my_channel), lba);
+    outb(reg_lba_m(hd->my_channel), lba >> 8);
+    outb(reg_lba_h(hd->my_channel), lba >> 16);
+    
+    uint8_t reg_device = BIT_DEV_MBS | BIT_DEV_LBA |
+            (hd->dev_no == 1 ? BIT_DEV_DEV : 0) |
+            lba >> 24;
+    
+    /* lba的第23-d7位位于device的第0-3位 */
+    outb(reg_dev(hd->my_channel), reg_device);
+}
+
+/* 向channel发命令 */
+static void cmd_out(ide_channel* channel, uint8_t cmd)
+{
+    /* 只要发出命令就置为true */
+    channel->expecting_intr = true;
+    outb(reg_cmd(channel), cmd);
+}
+
+/* 磁盘读入sec_cnt个扇区的数据到buf中 */
+static read_from_sector(disk* hd, void* buf, uint8_t sec_cnt)
+{
+    uint32_t size_in_byte;
+
+    /* 为0表示写入256个扇区 */
+    if(sec_cnt == 0)
+    {
+        size_in_byte = 256 * 512;
+    }
+    else
+    {
+        size_in_byte = sec_cnt * 512;
+    }
+    /* 写入的单位是字 */
+    insw(reg_data(hd->my_channel), buf, size_in_byte / 2);
+}
+
+/* 将 buf 中 sec_cnt 扇区的数据写入硬盘 */
+static void write2sector(disk* hd, void* buf, uint8_t sec_cnt)
+{
+    uint32_t size_in_byte;
+    if(sec_cnt == 0)
+    {
+        size_in_byte = 256 * 512;
+    }
+    else
+    {
+        size_in_byte = sec_cnt * 512;
+    }
+    outsw(reg_data(hd->my_channel), buf, size_in_byte / 2);
+}
+
+/* 等待30s */
+static bool busy_wait(disk* hd)
+{
+    ide_channel* channel = hd->my_channel;
+    uint16_t time_limit = 30 * 1000;
+    for(; time_limit >= 0; time_limit -= 10)
+    {
+        if(!(inb(reg_status(hd->my_channel)) & BIT_ALT_STAT_BUSY))
+        {
+            return inb(reg_status(hd->my_channel)) & BIT_ALT_STAT_DRQ;
+        }
+        else
+        {
+            /* 睡眠10毫秒*/
+            mtime_sleep(10);
+        }
+    }
+    printk("disk not ready!\n");
+    return false;
+}
+
+/* 从硬盘读取sec_cnt个扇区到buf中 */
+void ide_read(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt)
+{
+    lock_acquire(&hd->my_channel->channel_lock);
+
+    /* 选择硬盘 */
+    select_disk(hd);
+
+    /* 每次操作的扇区数 */
+    uint32_t secs_op;
+
+    /* 已完成的扇区数 */
+    uint32_t secs_done = 0;
+
+    /* 每次最多写入256个扇区 */
+    while(secs_done < sec_cnt)
+    {
+        if(secs_done + 256 <= sec_cnt)
+        {
+            secs_op = 256;
+        }
+        else
+        {
+            secs_op = sec_cnt - secs_done;
+        }
+
+        /* 写入待写入的扇区数和起始扇区号 */
+        select_sector(hd, lba + secs_done, secs_op);
+
+        /* 执行的命令写入reg_cmd寄存器 */
+        cmd_out(hd->my_channel, CMD_READ_SECTOR);
+
+        /************* 阻塞自己 ***********************
+         * 硬盘已经开始工作，阻塞自己，等待硬盘工作完成，发出
+         * 中断，唤醒线程
+         */
+        sema_down(&hd->my_channel->disk_done);
+
+        /* 检测硬盘状态是否可以读 */
+        if(!busy_wait(hd))
+        {
+            char error[64];
+            sprintf(error, "%s read sector %d failed|||\n", hd->name, lba);
+            PANIC(error);
+        } 
+
+        /* 把数据从硬盘缓冲区读出 */
+        read_from_sector(hd, (void*)((uint32_t)buf + secs_done * 512),
+                        secs_op);
+        
+        secs_done += secs_op;
+    }
+    lock_release(&hd->my_channel->channel_lock);
+}
+
+/* 将 buf 中 sec_cnt 扇区数据写入硬盘 */
+void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt)
+{
+    lock_acquire(&hd->my_channel->channel_lock);
+
+    /* 选择磁盘 */
+    select_disk(hd);
+
+    uint32_t secs_op;
+    uint32_t secs_done = 0;
+    while(secs_done < sec_cnt)
+    {
+        if(secs_done + 256 <= sec_cnt)
+        {
+            secs_op = 256;
+        }
+        else
+        {
+            secs_op = sec_cnt - secs_done;
+        }
+
+        /* 写入待写入的扇区数和起始扇区号 */
+        select_sector(hd, lba + secs_done, secs_op);
+
+        /* 写入写命令 */
+        cmd_out(hd->my_channel, CMD_WRItE_SECTOR);
+
+        /* 将数据写入硬盘 */
+        if(!busy_wait(hd))
+        {
+            char error[64];
+            sprintf(error, "%s write sector %d failed|||||\n", hd->name, lba);
+            PANIC(error);
+        }
+
+        /* 数据写入硬盘 */
+        write2sector(hd, (void*)((uint32_t)buf + secs_done * 512), secs_op);
+
+        /* 在硬盘响应期间阻塞自己,硬盘完成操作后会中断 */
+        sema_down(&hd->my_channel->disk_done);
+
+        secs_done += secs_op;
+
+    } // end while
+    lock_release(&hd->my_channel->channel_lock);
+}
+
+/* 硬盘中断处理程序 */
+void intr_hd_handler(uint8_t irq_no)
+{
+    /* 获取通道索引 */
+    uint8_t ch_no = irq_no - 0x2e;
+    
+    ide_channel* channel = &channels[ch_no];
+
+    /* 由于加了通道锁，只会是同一块硬盘操作引起的中断 */
+    if(channel->expecting_intr == true)
+    {
+        channel->expecting_intr = false;
+        sema_up(&channel->disk_done);
+
+        /* 读出status，清除中断 */
+        inb(reg_status(channel));
+    }
+}
+
 
 /* 硬盘数据结构初始化 */
 void ide_init()
@@ -86,7 +307,39 @@ void ide_init()
 
         /* 初始化为0， 向硬盘发出请求后阻塞 */
         sema_init(&channel->disk_done, 0);
+
+        register_handler(channel->irq_no, intr_hd_handler);
     }
 
     printk("ide_init done\n");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

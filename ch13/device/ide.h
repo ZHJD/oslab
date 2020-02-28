@@ -79,7 +79,14 @@ typedef struct ide_channel
 }ide_channel;
 
 
+/* 从硬盘读取sec_cnt个扇区到buf中 */
+void ide_read(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt);
 
+/* 将 buf 中 sec_cnt 扇区数据写入硬盘 */
+void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt);
+
+/* 硬盘数据结构初始化 */
+void ide_init();
 
 
 #endif
