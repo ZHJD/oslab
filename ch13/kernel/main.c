@@ -30,7 +30,7 @@ int main(void) {
 //       process_execute(prog_b, "prog_b");
     
     intr_enable();
-    while(1);
+//    while(1);
     return 0;
 }
 
@@ -71,7 +71,7 @@ void prog_a()
 
     free(addr2);
     free(addr3);
-    while(1);
+//    while(1);
 }
 
 void prog_b()
