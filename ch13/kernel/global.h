@@ -158,7 +158,7 @@ typedef struct gdt_desc
 
 #define DIV_ROUND_UP(X, STEP) ((X + STEP - 1) / (STEP))
 
-
+#define UNUSED __attribute__((unused))
 
 
 
