@@ -1,5 +1,6 @@
 #ifndef __DEVICE_TIMER_H
 #define __DEVICE_TIMER_H
+
 #include "stdint.h"
 
 /* 以ms为单位的顺眠函数  */
