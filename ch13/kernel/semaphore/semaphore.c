@@ -1,6 +1,8 @@
 #include "semaphore.h"
 #include "interrupt.h"
 #include "debug.h"
+#include "stdio_kernel.h"
+
 
 /**************************
  * 函数名:sema_init()
@@ -34,6 +36,7 @@ void sema_down(semaphore* psema)
         /* 当前线程不应该在阻塞队列上 */
         ASSERT(!elem_find(&psema->waiters, &get_running_thread_pcb()->general_tag));
         
+//        printk("sema_down name %s \n", get_running_thread_pcb()->name);        
         /********************************************************************
          * 执行while循环，不会导致等待队列中出现重复线程标志，因为下面会阻塞
          * 当前正在执行的线程，被唤醒的时候，该线程会被从等待队列中拿掉。而添加
@@ -96,6 +99,8 @@ void sema_up(semaphore* psema)
 
         /* 加入就绪队列，改为就绪态 */
         thread_unblock(thread_blocked);
+
+  //      printk("sema_up thread name %s \n", thread_blocked->name);
     }
     psema->value++;
 
