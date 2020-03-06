@@ -3,6 +3,7 @@
 #include "debug.h"
 #include "sync.h"
 #include "interrupt.h"
+#include "stdio_kernel.h"
 
 /* 页目录表索引(高10位) */
 #define PDE_IDX(vaddr) ((vaddr & 0xffc00000) >> 22)
@@ -575,6 +576,7 @@ void* sys_malloc(uint32_t size)
         }
         if(list_empty(&descs[desc_idx].free_list))
         {
+	  //      put_str("list empty\n");
              /* 分配一页框作为arena */
             a = malloc_page(PF, 1);
             if(a == NULL)
@@ -601,7 +603,9 @@ void* sys_malloc(uint32_t size)
         }
         /* 开始分配内存块 */
         b = elem2entry(mem_block, free_elem, list_pop_head(&(descs[desc_idx].free_list)));
-    
+        
+        //printk("address:0x%x  ", b);
+
         /* 清除mem_block信息 */
         memset(b, 0, descs[desc_idx].block_size);
     
@@ -705,6 +709,8 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
         {
             vaddr += PAGE_SIZE;
             pg_phy_addr = addr_v2p(vaddr);
+            
+            printk("pg_phy_addr: 0x%x\n", pg_phy_addr);
 
             /* 确保释放的内存位于内核空间 */
             ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
