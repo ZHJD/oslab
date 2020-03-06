@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "process.h"
 #include "sync.h"
+#include "stdio_kernel.h"
 
 /* idle线程,系统空闲的时候运行 */
 task_struct* idle_thread;
@@ -167,7 +168,7 @@ task_struct* thread_start(char* name,
     /* 所有进程的pcb都在内核空间 */
     task_struct* thread = get_kernel_pages(1);
 
-    init_thread(thread, function, func_arg);
+    init_thread(thread, name, func_arg);
 
     thread_create(thread, function, func_arg);
 
@@ -184,7 +185,7 @@ task_struct* thread_start(char* name,
     /* 确保不在所有线程的队列中 */
     ASSERT(!elem_find(&thread_all_list, &thread->all_list_tag));
 
-    /* 加入就绪队列 */
+    /* 加入线程队列 */
     list_push_back(&thread_all_list, &thread->all_list_tag);
 
     return thread;
@@ -233,6 +234,8 @@ void schedule(void)
     ASSERT(get_intr_status() == INTR_OFF);
     
     task_struct* cur = get_running_thread_pcb();
+    
+//    printk("down thread name:%s \n", cur->name);
 
     if(cur->status == TASK_RUNNING)
     {
@@ -265,6 +268,8 @@ void schedule(void)
     task_struct* next = (task_struct*)((uint32_t)(thread_tag) & 0xfffff000);
     
     next->status = TASK_RUNNING;
+    
+  //  printk("up thread name %s:\n", next->name);
 
     /* 切换任务页表等 */
     process_activate(next);
