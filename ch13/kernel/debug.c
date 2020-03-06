@@ -1,7 +1,7 @@
 #include "debug.h"
 #include "print.h"
 #include "interrupt.h"
-
+#include "stdio_kernel.h"
 
 /**************************************************************************
  * 函数名:panic_spin()
@@ -22,9 +22,7 @@ void panic_spin(char* filename, int line, const char* func, const char* conditio
     put_str(filename);
     put_char('\n');
 
-    put_str("line:");
-    put_int(line);
-    put_char('\n');
+    printk("line: %d \n", line);
     
     put_str("function name:");
     put_str(func);
