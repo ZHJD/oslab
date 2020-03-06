@@ -57,10 +57,10 @@ typedef struct disk
 typedef struct ide_channel
 {
     /* 本ata通道名称 */
-    char name[8];
+    char name[16];
     
     /* 本通道的起始端口号 */
-    uint8_t port_base;
+    uint16_t port_base;
 
     /* 本通道所使用的中断号 */
     uint8_t irq_no;
