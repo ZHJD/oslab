@@ -10,6 +10,7 @@
 #include "syscall_init.h"
 #include "ide.h"
 #include "interrupt.h"
+#include "fs.h"
 
 // 负责初始化所有模块
 void init_all(void)
@@ -27,4 +28,5 @@ void init_all(void)
     tss_init();
     intr_enable();
     ide_init();
+    filesys_init();
 }
