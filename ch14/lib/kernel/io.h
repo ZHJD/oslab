@@ -28,7 +28,7 @@ static inline void outsw(uint16_t port, const void* addr, uint32_t word_cnt)
   // d 表示edx
   // outsw表示把从ds:esi开始的连续word_cnt个16bit的内如写入端口port处
   // ds,es,ss内容相同
-  asm volatile ("cld; rep movsw": "+S"(addr), "+c"(word_cnt): "d"(port));
+  asm volatile ("cld; rep outsw": "+S"(addr), "+c"(word_cnt): "d"(port));
 }
 
 // 从port处读一个字节
