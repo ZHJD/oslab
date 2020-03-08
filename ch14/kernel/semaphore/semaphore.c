@@ -30,6 +30,10 @@ void sema_down(semaphore* psema)
 {
     /* 关中断实现原子操作 */
     intr_status old_status = intr_disable();
+    
+    //put_str("psema value: 0x");
+  //  put_int(psema->value);
+//    put_char('\n');
 
     while(psema->value <= 0)
     {
