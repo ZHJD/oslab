@@ -4,7 +4,9 @@ AS = nasm
 CC = gcc
 LD = ld
 LIB = -I ./lib -I ./lib/string -I ./lib/kernel -I ./kernel -I ./device \
-	  -I ./kernel/thread -I kernel/semaphore/ -I ./userprocess/ -I ./lib/user       
+	  -I ./kernel/thread -I kernel/semaphore/ -I ./userprocess/ -I ./lib/user \
+	  -I ./fs/
+
 ASFLAGS = -f elf32
 CFLAGS = -m32 -Wall $(LIB) -c -fno-builtin -fno-stack-protector
 LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main
@@ -20,7 +22,7 @@ OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
 			 $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o       \
 			 $(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/syscall.o \
 			 $(BUILD_DIR)/stdio.o $(BUILD_DIR)/ide.o 			\
-			 $(BUILD_DIR)/stdio_kernel.o
+			 $(BUILD_DIR)/stdio_kernel.o $(BUILD_DIR)/fs.o
 
 ###################   C代码编译  ########################################
 $(BUILD_DIR)/main.o: kernel/main.c
@@ -87,6 +89,9 @@ $(BUILD_DIR)/ide.o: device/ide.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/stdio_kernel.o: lib/kernel/stdio_kernel.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/fs.o: fs/fs.c
 	$(CC) $(CFLAGS) $< -o $@
 
 #################   汇编代码编译  ######################################
