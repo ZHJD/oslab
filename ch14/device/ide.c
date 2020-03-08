@@ -39,12 +39,6 @@
 /* 定义可以读写的最大扇区数，调试使用 */
 #define max_lba ((80 * 1024 * 1024 / 512) - 1)
 
-/* 按硬盘数计算通道数 */
-uint8_t channel_cnt;
-
-/* 两个ide通道 */
-ide_channel channels[2];
-
 /* 用于记录总扩展分区的起始lba, 初始为0，partition_scan 时以此为标记 */
 static int32_t ext_lba_base = 0;
 
@@ -146,7 +140,7 @@ static void select_sector(disk* hd, uint32_t lba, uint8_t sec_cnt)
     
     uint8_t reg_device = BIT_DEV_MBS | BIT_DEV_LBA |
             (hd->dev_no == 1 ? BIT_DEV_DEV : 0) |
-            lba >> 24;
+            (lba >> 24);
     
     /* lba的第23-d7位位于device的第0-3位 */
     outb(reg_dev(hd->my_channel), reg_device);
@@ -191,6 +185,7 @@ static void write2sector(disk* hd, void* buf, uint8_t sec_cnt)
         size_in_byte = sec_cnt * 512;
     }
     outsw(reg_data(hd->my_channel), buf, size_in_byte / 2);
+
 }
 
 /* 等待30s */
@@ -203,6 +198,8 @@ static bool busy_wait(disk* hd)
     {
         if(!(inb(reg_status(hd->my_channel)) & BIT_ALT_STAT_BUSY))
         {
+//          put_int(inb(reg_status(hd->my_channel)));
+//	        put_char('\n');
             return inb(reg_status(hd->my_channel)) & BIT_ALT_STAT_DRQ;
         }
         else
@@ -211,7 +208,6 @@ static bool busy_wait(disk* hd)
             mtime_sleep(10);
         }
     }
-//    printk("disk not ready!\n");
     return false;
 }
 
@@ -273,6 +269,9 @@ static void partition_scan(disk* hd, uint32_t ext_lba)
     /* 避免栈溢出 */
     boot_sector* bs = sys_malloc(sizeof(boot_sector));
     
+    printk("bs address at 0x%x:\n", &bs);
+    printk("bs value is 0x%x\n", bs);
+
     ASSERT(bs != 0);
 
     ide_read(hd, ext_lba, bs, 1);
@@ -315,7 +314,7 @@ static void partition_scan(disk* hd, uint32_t ext_lba)
                 list_push_back(&partition_list, &hd->logic_parts[l_no].part_tag);
                 sprintf(hd->logic_parts[l_no].name, "%s%d", hd->name, l_no + 5);
                 l_no++;
-                if(l_no >= 5)
+                if(l_no >= 8)
                 {
                     return;
                 }
@@ -323,6 +322,8 @@ static void partition_scan(disk* hd, uint32_t ext_lba)
         }
         p++;
     }
+    ASSERT(bs != 0);
+    printk("bs address at 0x%x:\n", &bs);
     sys_free(bs);
 }
 
@@ -402,6 +403,7 @@ void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt)
     uint32_t secs_done = 0;
     while(secs_done < sec_cnt)
     {
+        put_str("1\n");
         if(secs_done + 256 <= sec_cnt)
         {
             secs_op = 256;
@@ -416,7 +418,7 @@ void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt)
 
         /* 写入写命令 */
         cmd_out(hd->my_channel, CMD_WRItE_SECTOR);
-
+        
         /* 将数据写入硬盘 */
         if(!busy_wait(hd))
         {
@@ -427,9 +429,10 @@ void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt)
 
         /* 数据写入硬盘 */
         write2sector(hd, (void*)((uint32_t)buf + secs_done * 512), secs_op);
-
+	
         /* 在硬盘响应期间阻塞自己,硬盘完成操作后会中断 */
         sema_down(&hd->my_channel->disk_done);
+        
 
         secs_done += secs_op;
 
@@ -442,7 +445,8 @@ void intr_hd_handler(uint8_t irq_no)
 {
     /* 获取通道索引 */
     uint8_t ch_no = irq_no - 0x2e;
-    
+   
+    put_str("handler\n"); 
     ide_channel* channel = &channels[ch_no];
 
     /* 由于加了通道锁，只会是同一块硬盘操作引起的中断 */
