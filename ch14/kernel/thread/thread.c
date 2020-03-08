@@ -146,7 +146,18 @@ void init_thread(task_struct* pthread, char* name, int prio)
     pthread->pgdir_vaddr = NULL;
     /* 线程栈顶在pcb所在页的最高地址处 */
     pthread->self_kstack = (uint32_t*)((uint32_t)pthread + PAGE_SIZE);
+   
+    /* 预留标准输入输出 */
+    pthread->fd_table[0] = 0;
+    pthread->fd_table[1] = 1;
+    pthread->fd_table[2] = 2;
     
+    /* 其余的初始化为-1 */
+    for(uint8_t idx = 0; idx < MAX_FILES_PER_PROC; idx++)
+    {
+        pthread->fd_table[idx] = -1;
+    }
+
     /* 魔数，用于检测栈顶指针是否进入pcb结构所在内存 */
     pthread->stack_magic = 0x19870916;
 }
