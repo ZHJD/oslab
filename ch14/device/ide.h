@@ -5,6 +5,7 @@
 #include "list.h"
 #include "sync.h"
 #include "semaphore.h"
+#include "super_block.h"
 
 typedef struct partition
 {
@@ -24,7 +25,7 @@ typedef struct partition
     char name[8];
 
     /* 本区内的超级快 */
-//    super_block* sb;
+    super_block* sb;
 
     /* 块位图 */
     bitmap block_bitmap;
@@ -77,6 +78,13 @@ typedef struct ide_channel
     /* 每个通道链接两个硬盘 */
     disk devices[2];
 }ide_channel;
+
+
+/* 按硬盘数计算通道数 */
+uint8_t channel_cnt;
+
+/* 两个ide通道 */
+ide_channel channels[2];
 
 
 /* 从硬盘读取sec_cnt个扇区到buf中 */
