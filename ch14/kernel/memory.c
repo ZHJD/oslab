@@ -483,6 +483,8 @@ void* get_a_page(pool_flags pf, uint32_t vaddr)
 uint32_t addr_v2p(uint32_t vaddr)
 {
     uint32_t* pte = get_pte_ptr(vaddr);
+    
+  //  put_int(*pte);
 
     /* 页表项内容去掉低12位得到物理页号，虚拟地址低12位是页内偏移地址 */
     return ((*pte & 0xfffff000) + (vaddr & 0x00000fff));
@@ -505,6 +507,9 @@ static arena* block2arena(mem_block* b)
 /* 在堆中申请size字节内存 */
 void* sys_malloc(uint32_t size)
 {
+
+    put_str("sys_malloc\n");
+
     pool_flags PF;
     pool* mem_pool;
     uint32_t pool_size;
@@ -678,8 +683,11 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
     uint32_t pg_phy_addr;
     uint32_t vaddr = (uint32_t)_vaddr;
     uint32_t cnt = 0;
-    ASSERT(pg_cnt >= 1 && vaddr % PAGE_SIZE == 0);
+    ASSERT(pg_cnt >= 1 && vaddr % PAGE_SIZE == 0
+                    && vaddr != 0);
     pg_phy_addr = addr_v2p(vaddr);
+    
+    //printk("page_cnt: %d\n", pg_cnt);
 
     /* 低端1MB内存，1KB页目录表，1KB页表 */
     ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
@@ -708,10 +716,13 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
         while(cnt < pg_cnt)
         {
             vaddr += PAGE_SIZE;
-            pg_phy_addr = addr_v2p(vaddr);
             
-            printk("pg_phy_addr: 0x%x\n", pg_phy_addr);
+        //    printk("vaddr : 0x%x\n", vaddr);
 
+            pg_phy_addr = addr_v2p(vaddr);
+
+      //      printk("pg_phy_addr : 0x%x\n", pg_phy_addr);
+            
             /* 确保释放的内存位于内核空间 */
             ASSERT(pg_phy_addr % PAGE_SIZE == 0 &&
                 pg_phy_addr >= kernel_pool.phy_addr_start &&
@@ -721,7 +732,7 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt)
 
             page_table_pte_remove(vaddr);
             
-            pg_cnt++;
+            cnt++;
         }
         vaddr_remove(pf, _vaddr, pg_cnt);    
     }
@@ -765,6 +776,8 @@ void sys_free(void* ptr)
             {
                 /* 如果该arena全部没有被分配出去,置空对应的链表 */
                 list_init(&a->desc->free_list);
+                ASSERT(a != 0);
+//                put_str("aaa \n");
                 mfree_page(PF, a, 1);
             }
         }
