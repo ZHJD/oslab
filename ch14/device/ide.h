@@ -34,7 +34,7 @@ typedef struct partition
     bitmap inode_bitmap;
 
     /* 本分区打开的i结点队列 */
-    list open_inode;
+    list open_inodes;
 }partition;
 
 typedef struct disk
@@ -86,6 +86,8 @@ uint8_t channel_cnt;
 /* 两个ide通道 */
 ide_channel channels[2];
 
+/* 分区队列 */
+list partition_list;
 
 /* 从硬盘读取sec_cnt个扇区到buf中 */
 void ide_read(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt);

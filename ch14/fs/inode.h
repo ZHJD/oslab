@@ -2,9 +2,10 @@
 #define __FS_INODE_H
 #include "stdint.h"
 #include "list.h"
+#include "ide.h"
 
 /* inode结构 */
-typedef struct inode
+struct inode
 {
     /* inode 编号 */
     uint32_t i_no;
@@ -25,6 +26,19 @@ typedef struct inode
 
     /* 用于加入已打开的inode列表 */
     list_elem inode_tag;
-}inode;
+};
+
+/* 将inode写入到分区part */
+void inode_sync(partition* part, struct inode* inode, void* io_buf);
+
+/* 根据i结点号返回相应的i结点 */
+struct inode* inode_open(partition* part, uint32_t inode_no);
+
+/* 关闭inode或者减少inode的打开数 */
+void inode_close(struct inode* inode);
+
+/* 初始化new_inode */
+void inode_init(uint32_t inode_no, struct inode* new_inode);
+
 
 #endif

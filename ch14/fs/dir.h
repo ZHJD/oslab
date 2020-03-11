@@ -1,5 +1,5 @@
 #ifndef __FS_DIR_H
-#define __FS_DIR_H
+#define __FS_DIR_H 
 #include "stdint.h"
 #include "inode.h"
 #include "fs.h"
@@ -11,16 +11,18 @@
 
 
 /* 目录结构 */
-typedef struct dir
+struct dir
 {
-    inode i_node;
+    struct inode* inode;
 
     /* 记录在目录内的偏移 */
     uint32_t dir_pos;
 
     /* 目录的数据缓存 */
     uint8_t dir_buf[512];
-}dir;
+};
+
+struct dir dir;
 
 /* 目录项结构 */
 typedef struct dir_entry
@@ -33,10 +35,6 @@ typedef struct dir_entry
     /* 文件类型 */
     file_types f_type;
 }dir_entry;
-
-
-
-
 
 
 

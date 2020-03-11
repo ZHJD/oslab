@@ -112,7 +112,7 @@ uint32_t strlen(const char *str)
 int strcmp(const char *a_, const char *b_)
 {
     ASSERT(a_ != NULL && b_ != NULL);
-    while (a_ && b_)
+    while (*a_ != '\0' && *b_ != '\0')
     {
         if (*a_ < *b_)
         {
@@ -129,12 +129,12 @@ int strcmp(const char *a_, const char *b_)
         }
     }
     /*如果a_不为空,则a_大*/
-    if (a_)
+    if (*a_ != '\0' )
     {
         return 1;
     }
     /*如果b_不为空*/
-    else if (b_)
+    else if (*b_ != '\0')
     {
         return -1;
     }

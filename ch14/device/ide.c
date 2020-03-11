@@ -47,9 +47,6 @@ static uint8_t p_no = 0;
 
 static uint8_t l_no = 0;
 
-/* 分区队列 */
-list partition_list;
-
 struct partition_table_entry
 {
     /* 是否可引导 */

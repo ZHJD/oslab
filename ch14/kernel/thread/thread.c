@@ -153,7 +153,7 @@ void init_thread(task_struct* pthread, char* name, int prio)
     pthread->fd_table[2] = 2;
     
     /* 其余的初始化为-1 */
-    for(uint8_t idx = 0; idx < MAX_FILES_PER_PROC; idx++)
+    for(uint8_t idx = 0; idx < MAX_FILES_OPEN_PER_PROC; idx++)
     {
         pthread->fd_table[idx] = -1;
     }

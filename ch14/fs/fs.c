@@ -21,7 +21,7 @@ static void partition_format(partition* part)
 
     /* inode table 占用的扇区数 */
     uint32_t inode_table_sects = 
-            DIV_ROUND_UP(sizeof(inode) * MAX_FILES_PER_PART,
+            DIV_ROUND_UP(sizeof(struct inode) * MAX_FILES_PER_PART,
             SECTOR_SIZE);
 
     uint32_t used_sects = boot_sector_sects + super_block_sects +
@@ -123,7 +123,7 @@ static void partition_format(partition* part)
     printk("buf address at 0x%x\n", (uint32_t)buf);
     printk("buf end at 0x%x\n", (uint32_t)buf + buf_size);
     memset(buf, 0, buf_size);
-    inode* i = (inode*)buf;
+    struct inode* i = (struct inode*)buf;
 
     /* 目录 . 和 ..*/
     i->i_size = sb.dir_entry_size * 2;
@@ -160,6 +160,82 @@ static void partition_format(partition* part)
     printk("   format done\n   ");
 
     sys_free(buf);
+}
+
+/* 在分区链表中找到名为part_name的分区，并将指针赋值给cur_part */
+static bool mount_partition(struct list_elem* pelem, int arg)
+{
+    char* part_name = (char*)arg;
+    partition* part = elem2entry(struct partition, part_tag, pelem);
+        
+    printk("%s len %d \n", part->name, strlen(part->name));
+    printk("%s len %d \n", part_name, strlen(part_name));
+
+    /* 如果名字相等 */
+    if(!strcmp(part->name, part_name))
+    {
+        cur_part = part;
+        struct disk* hd = cur_part->my_disk;
+
+        /* sb_buf用来存储从磁盘上读入的超级块 */
+        struct super_block* sb_buf = 
+            (struct super_block*)sys_malloc(SECTOR_SIZE);
+        
+        /* 在内存中创建分区cur_part的超级块 */
+        cur_part->sb = (struct super_block*)sys_malloc(sizeof(super_block));
+        if(cur_part->sb == NULL)
+        {
+            PANIC("alloc memory failed!\n");
+        }
+
+        /* 读入超级块 */
+        //memset(sb_buf, 0, SECTOR_SIZE);
+        ide_read(hd, cur_part->start_lba + 1, sb_buf, 1);
+        
+
+        /* 把sb_buf中超级块的信息复制到分区的超级块sb中 */
+        memcpy(cur_part->sb, sb_buf, sizeof(super_block));
+
+        /* 超级块大小不足一个扇区 */
+        sys_free(sb_buf);
+
+        /***** 把硬盘上的块位图读入内存   **********/
+        cur_part->block_bitmap.bits = (uint8_t*)sys_malloc(
+            sb_buf->block_bitmap_sects * SECTOR_SIZE
+        );
+
+        if(cur_part->block_bitmap.bits == NULL)
+        {
+            PANIC("alloc memory failed");
+        }
+        cur_part->block_bitmap.btmp_bytes_len = 
+            sb_buf->block_bitmap_sects * SECTOR_SIZE;
+
+        /* 从硬盘上读入块位图到分区的block_bitmap_bits */
+        ide_read(hd, sb_buf->block_bitmap_lba, 
+            cur_part->block_bitmap.bits, sb_buf->block_bitmap_sects);
+        
+        /**** 把磁盘上的inode位图读入内存  ********************/
+        cur_part->inode_bitmap.bits = 
+            (uint8_t*)sys_malloc(sb_buf->inode_bitmap_sects * SECTOR_SIZE);
+        if(cur_part->inode_bitmap.bits == NULL)
+        {
+            PANIC("alloc memory failed!\n");
+        }
+        cur_part->inode_bitmap.btmp_bytes_len = 
+            sb_buf->inode_bitmap_sects * SECTOR_SIZE;
+        
+        /***  从硬盘上读入inode位图到分区的inode_bitmap_bits  ***/
+        ide_read(hd, sb_buf->inode_bitmap_lba,
+            cur_part->inode_bitmap.bits, sb_buf->inode_bitmap_sects);
+        /***************************************************************/
+
+        list_init(&cur_part->open_inodes);
+        printk("mount %s done!\n", part->name);
+        return true;
+    }
+    printk("mount %s failed\n", part_name);
+    return false;
 }
 
 /* 在磁盘上搜索文件系统，若没有则格式化分区创建文件系统 */
@@ -225,4 +301,49 @@ void filesys_init()
         channel_no++;    // 下一通道
     }
     sys_free(sb_buf);
+
+    /* 确定默认操作的分区 */
+    char default_part[] = "sdb1";
+
+    /* 挂载分区 */
+    list_traversal(&partition_list, mount_partition, (int)default_part);
+}
+
+/* 把最上层的路径名字解析出来 */
+static char* path_parse(char* pathname, char* name_store)
+{
+    int i = 0;
+    /* 根目录不需要解析 */
+    if(pathname[0] == '/')
+    {
+        for(; pathname[i] == '/'; i++);
+    }
+    
+    /* 一般名字解析 */
+    for(; pathname[i] != '/' && pathname[i] != '\0'; i++)
+    {
+        *name_store++ = pathname[i];
+    }
+
+    if(pathname[i] == '\0')
+    {
+        return NULL;
+    }
+
+    /* 返回下一个路径的子字符串 */
+    return pathname + i;
+}
+
+/* 返回路径深度，比如/a/b/c 深度为3 */
+int32_t path_depth_cnt(char* pathname)
+{
+    ASSERT(pathname != NULL);
+    char* p = pathname;
+    char name[MAX_FILE_NAME_LEN];
+    uint32_t depth = 0;
+    for(; p != NULL; p = path_parse(p, name))
+    {
+        depth++;
+    }
+    return depth;
 }

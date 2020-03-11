@@ -29,7 +29,7 @@ int main(void) {
   //     process_execute(prog_a, "prog_a");
 //       process_execute(prog_b, "prog_b");
     
-    intr_enable();
+//    intr_enable();
     while(1);
     return 0;
 }

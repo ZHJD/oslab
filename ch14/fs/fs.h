@@ -12,6 +12,8 @@
 
 #define BLOCK_SIZE    SECTOR_SIZE
 
+struct partition* cur_part;
+
 /* 文件类型 */
 typedef enum file_types
 {

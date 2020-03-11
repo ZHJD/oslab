@@ -5,7 +5,7 @@
 #include "memory.h"
 
 /* 每个进程可以打开的最大文件数 */
-#define MAX_FILES_PER_PROC 8
+#define MAX_FILES_OPEN_PER_PROC 8
 
 
 typedef int16_t pid_t;
@@ -126,7 +126,7 @@ typedef struct task_struct
     uint32_t elapsed_ticks;
 
     /* 文件描述符数组  */
-    int32_t fd_table[MAX_FILES_PER_PROC]; 
+    int32_t fd_table[MAX_FILES_OPEN_PER_PROC]; 
 
     /* 用于把线程加入一般队列(如就绪队列)等 */
     list_elem general_tag;
