@@ -2,6 +2,9 @@
 #define __FS_FILE_H
 #include "stdint.h"
 #include "ide.h"
+#include "inode.h"
+#include "dir.h"
+
 
 /* 文件结构 */
 struct file
@@ -10,7 +13,7 @@ struct file
     uint32_t fd_pos;
 
     /* 文件操作标识 */
-    uint32_t fs_flags;
+    uint32_t fd_flag;
 
     /* 指向inode队列中open_inodes中的inode */
     struct inode* fd_inode;
@@ -58,6 +61,9 @@ int32_t block_bitmap_alloc(partition* part);
 
 /* 将内存中bitmap第bit_idx位所在的512字节同步到硬盘 */
 void bitmap_sync(partition* part, uint32_t bit_idx, uint8_t btmp);
+
+/* 创建文件，创建成功，返回文件描述符，失败则返回-1 */
+int32_t file_create(struct dir* parent_dir, char* filename, uint8_t flag);
 
 
 
