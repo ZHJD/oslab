@@ -39,9 +39,7 @@ typedef struct dir_entry
 }dir_entry;
 
 /* 把目录项p_de写入父目录parent_dir中，io_buf由主调函数提供 */
-bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de,
-                    struct partition* part,
-                    void* io_buf);
+bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de, void* io_buf);
 
 
  /* 在part分区内的pdir目录内寻找名字为name的文件或目录,找到后返回

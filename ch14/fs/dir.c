@@ -104,9 +104,7 @@ void open_root_dir(partition* part)
 
 
 /* 把目录项p_de写入父目录parent_dir中，io_buf由主调函数提供 */
-bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de,
-                    struct partition* part,
-                    void* io_buf)
+bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de, void* io_buf)
 {
     struct inode* dir_inode = parent_dir->inode;
     uint32_t dir_size = dir_inode->i_size;
