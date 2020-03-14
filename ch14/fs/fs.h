@@ -12,6 +12,9 @@
 
 #define BLOCK_SIZE    SECTOR_SIZE
 
+#define MAX_PATH_LEN 512
+
+
 struct partition* cur_part;
 
 /* 文件类型 */
@@ -27,6 +30,26 @@ typedef enum file_types
     FT_DIRECTORY
 }file_types;
 
+/* 打开文件的选项 */
+typedef enum oflags
+{
+    O_RDONLY,
+    O_WRONLY,
+    O_RDWR,
+    O_CREAT = 4
+}oflags;
+
+typedef struct path_search_record
+{
+    /* 查找过程中的父路径 */
+    char searched_path[MAX_PATH_LEN];
+
+    /* 文件或目录所在的直接父目录 */
+    struct dir* parent_dir;
+
+    /* 找到的是谱图文件，还是目录,找不到将为未知类型(FT_UNKNOWN) */
+    file_types file_type;
+}path_search_record;
 
 void filesys_init();
 

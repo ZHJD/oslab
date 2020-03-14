@@ -2,6 +2,11 @@
 #include "ide.h"
 #include "file.h"
 #include "debug.h"
+#include "string.h"
+#include "bitmap.h"
+#include "stdio_kernel.h"
+#include "file.h"
+
 /* 根目录 */
 struct dir root_dir;
 
@@ -50,7 +55,7 @@ void open_root_dir(partition* part)
         ide_read(part->my_disk, pdir->inode->i_sectors[12], all_blocks + 12, 1);
     }
 
-    uint8_t* buf = (uint8_t)sys_malloc(SECTOR_SIZE);
+    uint8_t* buf = (uint8_t*)sys_malloc(SECTOR_SIZE);
 
     /* p_de为指向目录项的指针 */
     struct dir_entry* p_de = (struct dir_entry*)buf;
@@ -222,5 +227,33 @@ bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de,
     printk("directory is full\n");
     return false;
 }   
+
+/* 关闭目录 */
+void dir_close(struct dir* dir)
+{
+/***********  根目录不能关闭   ***************
+ * 1、根目录自打开后不应该关闭
+ * 2、root_dir所在的内存是低端1MB内存，不是在堆内
+ */
+    if(dir == &root_dir)
+    {
+    /* 对于根目录，不做任何处理 */
+        return;
+    }
+    inode_close(dir->inode);
+    sys_free(dir);
+}
+
+/* 在内存中初始化目录项p_de */
+void create_dir_entry(char* filename, uint32_t inode_no, uint8_t file_type,
+    struct dir_entry* p_de)
+{
+    ASSERT(strlen(filename) <= MAX_FILE_NAME_LEN);
+
+    /* 初始化目录项 */
+    memcpy(p_de->filename, filename, strlen(filename));
+    p_de->i_no = inode_no;
+    p_de->f_type = file_type;
+}
 
 

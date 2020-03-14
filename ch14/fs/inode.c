@@ -4,6 +4,8 @@
 #include "list.h"
 #include "thread.h"
 #include "debug.h"
+#include "string.h"
+
 
 /* 用来存储inode位置 */
 typedef struct inode_position
