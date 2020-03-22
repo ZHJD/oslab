@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include "ide.h"
 #include "inode.h"
-#include "dir.h"
+
 
 
 /* 文件结构 */
@@ -44,6 +44,9 @@ typedef enum bitmap_type
 
 /* 系统可打开的最大文件数 */
 #define MAX_FILE_OPEN 32
+
+extern struct file file_table[MAX_FILE_OPEN];
+
 
 /* 从文件表file_table中获取一个空闲位，成功返回下标，失败返回-1 */
 int32_t get_free_slot_in_global(void);
