@@ -307,16 +307,29 @@ void filesys_init()
 
     /* 挂载分区 */
     list_traversal(&partition_list, mount_partition, (int)default_part);
+
+    /* 将当前分区的根目录打开 */
+    open_root_dir(cur_part);
+
+    /* 初始化文件夹 */
+    uint32_t fd_idx = 0;
+    while(fd_idx < MAX_FILE_OPEN)
+    {
+        file_table[fd_idx++].fd_inode = NULL;
+    }
 }
 
 /* 把最上层的路径名字解析出来 */
 static char* path_parse(char* pathname, char* name_store)
 {
+
+//    printk("path_parse path name %s \n", pathname);
+    ASSERT(pathname != NULL);
     int i = 0;
     /* 根目录不需要解析 */
     if(pathname[0] == '/')
     {
-        for(; pathname[i] == '/'; i++);
+        for(; pathname[i] == '/' && pathname != '\0'; i++);
     }
     
     /* 一般名字解析 */
@@ -325,11 +338,13 @@ static char* path_parse(char* pathname, char* name_store)
         *name_store++ = pathname[i];
     }
 
+    *name_store = '\0';
+
+   
     if(pathname[i] == '\0')
     {
         return NULL;
     }
-
     /* 返回下一个路径的子字符串 */
     return pathname + i;
 }
@@ -351,6 +366,8 @@ int32_t path_depth_cnt(char* pathname)
 /* 搜索文件pathnode，找到后返回inode号 */
 static int search_file(const char* pathname, path_search_record* searched_record)
 {   
+    printk("search file\n");
+
     /* 如果查找的是根目录 */
     if(!strcmp(pathname, "/") ||
         !strcmp(pathname, "/.") ||
@@ -372,18 +389,21 @@ static int search_file(const char* pathname, path_search_record* searched_record
     struct dir* parent_dir = &root_dir;
     struct dir_entry dir_e;
 
-    char name[MAX_FILE_NAME_LEN] = "/0";
+    char name[MAX_FILE_NAME_LEN];
+    name[0] = '\0';
 
     searched_record->parent_dir = parent_dir;
     searched_record->file_type = FT_UNKNOWN;
     uint32_t parent_inode_no = 0; // 父目录的inode号
 
+   // printk("parent_dir \n");
     sub_path = path_parse(sub_path, name);
-
+     
+    
     /* 若路径不空 */
-    while(name[0] != '/0')
+    while(name[0] != '\0')
     {
-        ASSERT(strlen(searched_record->searched_path < 512));
+        ASSERT(strlen(searched_record->searched_path) < 512);
 
         strcat(searched_record->searched_path, "/");
         strcat(searched_record->searched_path, name);
@@ -418,7 +438,9 @@ static int search_file(const char* pathname, path_search_record* searched_record
             /************************************************************
              * 找不到目录项时，要留着parent_dir不要关闭。
              * 若是创建新文件的话需要在parrent_dir中创建
-             */ 
+             */
+            
+            printk("not found\n");
             return -1;
         }   
     }
@@ -431,4 +453,90 @@ static int search_file(const char* pathname, path_search_record* searched_record
     searched_record->file_type = FT_DIRECTORY;
 
     return dir_e.i_no;
+}
+
+/* 打开或者创建文件成功后，返回文件描述符，否则返回-1 */
+int32_t sys_open(const char* pathname, uint8_t flags)
+{
+    printk("sys_open \n");
+    
+    printk("%s\n", pathname);
+
+    /* 此处只是打开文件 */
+    if(pathname[strlen(pathname) - 1] == '/')
+    {
+        printk("can not open a directory %s\n", pathname);
+        return -1;
+    }
+
+    ASSERT(flags < 7);
+    
+    /* 假设找不到 */
+    int32_t fd = -1;
+
+    struct path_search_record searched_record;
+
+    memset(&searched_record, 0, sizeof(searched_record));
+
+    /* 记录目录的深度，帮助判断中间某个目录是否不存在 */
+    uint32_t pathname_depth = path_depth_cnt((char*)pathname);
+    
+    printk("pathname_depth %d\n", pathname_depth);
+    
+    /* 先检索文件是否存在 */
+    int inode_no = search_file(pathname, &searched_record);
+    
+    printk("inode no %d\n", inode_no);
+
+    bool found = inode_no != -1 ? true : false;
+    
+    if(searched_record.file_type == FT_DIRECTORY)
+    {
+        printk("can't open a directory with open(), use opendir() to instead\n");
+        dir_close(searched_record.parent_dir);
+        return -1;
+    }
+
+    uint32_t path_searched_depth = 
+        path_depth_cnt(searched_record.searched_path);
+    
+    printk("path searched depth %d\n", path_searched_depth);
+
+    /* 先判断是否把pathname的各层目录都访问到了 */
+    if(pathname_depth != path_searched_depth)
+    {
+        printk("can not access to %s:\n", pathname);
+        dir_close(searched_record.parent_dir);
+        return -1;
+    }
+
+    /* 若在最后一个路径上没用找到，且不是要创建文件，则返回-1 */
+    if(!found && !(flags & O_CREAT))
+    {
+        printk("in path %s, file %s is't exist\n",
+            searched_record.searched_path,
+            (strrchr(searched_record.searched_path, '/') + 1));
+        
+        dir_close(searched_record.parent_dir);
+        return -1;
+    }
+    else if(found && (flags & O_CREAT))
+    {
+        printk("%s has already exist \n", pathname);
+        dir_close(searched_record.parent_dir);
+        return -1;
+    }
+    
+    switch(flags & O_CREAT)
+    {
+    case O_CREAT:
+        printk("creating file\n");
+        fd = file_create(searched_record.parent_dir,
+            strrchr(pathname, '/') + 1, flags);
+        dir_close(searched_record.parent_dir);
+    default:
+        break;
+    }
+    
+    return fd;
 }

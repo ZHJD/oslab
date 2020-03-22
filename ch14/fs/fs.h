@@ -1,6 +1,13 @@
 #ifndef __FS_FS_H
 #define __FS_FS_H
 
+#include "file.h"
+#include "stdint.h"
+
+
+/* 系统可打开的最大文件数 */
+#define MAX_FILE_OPEN 32
+
 /* 每个分区所支持的最大创建的文件数 */
 #define MAX_FILES_PER_PART   4096
 
@@ -53,5 +60,7 @@ typedef struct path_search_record
 
 void filesys_init();
 
+/* 打开或者创建文件成功后，返回文件描述符，否则返回-1 */
+int32_t sys_open(const char* pathname, uint8_t flags);
 
 #endif
