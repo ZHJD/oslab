@@ -9,7 +9,7 @@
 #include "process.h"
 #include "stdio.h"
 #include "syscall.h"
-
+#include "fs.h"
 
 
 void func1(void* arg);
@@ -30,6 +30,8 @@ int main(void) {
 //       process_execute(prog_b, "prog_b");
     
 //    intr_enable();
+    
+    sys_open("/file1", O_CREAT);
     while(1);
     return 0;
 }
