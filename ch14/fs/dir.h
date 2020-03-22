@@ -8,8 +8,6 @@
 #define MAX_FILE_NAME_LEN  16
 
 
-
-
 /* 目录结构 */
 struct dir
 {
@@ -35,7 +33,7 @@ typedef struct dir_entry
     uint32_t i_no;
 
     /* 文件类型 */
-    file_types f_type;
+    enum file_types f_type;
 }dir_entry;
 
 /* 把目录项p_de写入父目录parent_dir中，io_buf由主调函数提供 */
