@@ -32,11 +32,17 @@ void open_root_dir(partition* part)
  bool search_dir_entry(partition* part, struct dir* pdir,
                       const char* name, struct dir_entry* dir_e)
  {
-     /* 12个直接块，128个一级间接块 = 140块 */
+
+    printk("search_dir_entry\n");
+
+    /* 12个直接块，128个一级间接块 = 140块 */
      uint32_t block_cnt = 140;
 
     /* 12 * 4 + 512 共这么多的扇区号 */
     uint32_t* all_blocks = (uint32_t*)sys_malloc(48 + 512);
+    
+    printk("all_blocks address 0x%x\n", all_blocks);
+
     if(all_blocks == NULL)
     {
         printk("search_dir_entry: sys_malloc for all_blocks failed");
@@ -46,6 +52,7 @@ void open_root_dir(partition* part)
     while(block_idx < 12)
     {
         all_blocks[block_idx] = pdir->inode->i_sectors[block_idx];
+        block_idx++;
     }
 
     /* 若含有一级间接块表 */
@@ -64,7 +71,10 @@ void open_root_dir(partition* part)
 
     /* 一个扇区内容纳的目录项个数 */
     uint32_t dir_entry_cnt = SECTOR_SIZE / dir_entry_size;
-    
+   
+    printk("block idx\n"); 
+
+    block_idx = 0;
     /* 开始在所有块中查找目录项 */
     while(block_idx < block_cnt)
     {
@@ -82,6 +92,8 @@ void open_root_dir(partition* part)
         /* 遍历扇区中所有的目录项 */
         while(dir_entry_idx < dir_entry_cnt)
         {
+            printk("dir entry %s \n", p_de->filename);
+
             /* 若找到了，就复制整个目录项 */
             if(!strcmp(p_de->filename, name))
             {
@@ -99,6 +111,8 @@ void open_root_dir(partition* part)
     }
     sys_free(buf);
     sys_free(all_blocks);
+
+    printk("search dir done!\n");
     return false;
  }
 
