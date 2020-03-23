@@ -3,6 +3,7 @@
 #include "stdio_kernel.h"
 #include "ide.h"
 #include "fs.h"
+#include "string.h"
 
 /* 文件表 */
 struct file file_table[MAX_FILE_OPEN];
@@ -201,7 +202,42 @@ int32_t file_create(struct dir* parent_dir, char* filename, uint8_t flag)
     return pcb_fd_install(fd_idx);
 }
 
+/* 打开编号为inode_no的inode对应的文件,若成功则
+返回文件描述符，否则返回-1 */
+int32_t file_open(uint32_t inode_no, uint8_t flag)
+{
+    int fd_idx = get_free_slot_in_global();
+    if(fd_idx == -1) 
+    {
+        printk("exceed max open files\n");
+        return -1;
+    }
+    file_table[fd_idx].fd_inode = inode_open(cur_part, inode_no);
 
+    /* 打开时文件内的指针指向开头 */
+    file_table[fd_idx].fd_pos   = 0;
+    file_table[fd_idx].fd_flag = flag;
+
+    bool* write_deny = &file_table[fd_idx].fd_inode->write_deny;
+
+    if(flag & O_WRONLY || flag & O_RDWR)
+    {
+        enum intr_status old_status = intr_disable();
+        if(!(*write_deny))
+        {
+            *write_deny = true;
+            set_intr_status(old_status);
+        }
+        else // 若其他进程在写，返回写失败
+        {
+            set_intr_status(old_status);
+            printk("file can't be write now, try again later\n");
+            return -1;
+        }
+    }
+    /* 返回描述符 */
+    return pcb_fd_install(fd_idx);
+}
 
 
 

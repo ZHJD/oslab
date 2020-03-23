@@ -3,8 +3,8 @@
 #include "stdint.h"
 #include "ide.h"
 #include "inode.h"
-
-
+#include "interrupt.h"
+#include "dir.h"
 
 /* 文件结构 */
 struct file
@@ -68,8 +68,9 @@ void bitmap_sync(partition* part, uint32_t bit_idx, uint8_t btmp);
 /* 创建文件，创建成功，返回文件描述符，失败则返回-1 */
 int32_t file_create(struct dir* parent_dir, char* filename, uint8_t flag);
 
-
-
+/* 打开编号为inode_no的inode对应的文件,若成功则
+返回文件描述符，否则返回-1 */
+int32_t file_open(uint32_t inode_no, uint8_t flag);
 
 
 #endif
