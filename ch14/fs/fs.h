@@ -1,9 +1,7 @@
 #ifndef __FS_FS_H
 #define __FS_FS_H
-
-#include "file.h"
+#include "ide.h"
 #include "stdint.h"
-
 
 /* 系统可打开的最大文件数 */
 #define MAX_FILE_OPEN 32
@@ -22,7 +20,7 @@
 #define MAX_PATH_LEN 512
 
 
-struct partition* cur_part;
+extern struct partition* cur_part;
 
 /* 文件类型 */
 typedef enum file_types

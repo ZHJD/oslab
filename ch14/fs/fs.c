@@ -1,11 +1,13 @@
 #include "fs.h"
-#include "ide.h"
 #include "memory.h"
 #include "stdio_kernel.h"
 #include "inode.h"
-#include "dir.h"
 #include "debug.h"
+#include "dir.h"
+#include "file.h"
 
+
+struct partition* cur_part;
 
 /* 格式化分区，也就是初始化分区的元信息，创建文件系统 */
 static void partition_format(partition* part)
