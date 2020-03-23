@@ -45,7 +45,9 @@ static void inode_locate(partition* part, uint32_t inode_no, inode_position* ino
     {
         inode_pos->two_sec = false;
     }
+
     inode_pos->sec_lba = inode_table_lba + off_sec;
+    printk("inode no %d inode pos %d, off size %d \n", inode_no, inode_pos->sec_lba, off_size_in_sec);
 
     /* 扇区内的起始字节 */
     inode_pos->off_size = off_size_in_sec;
@@ -60,7 +62,7 @@ void inode_sync(partition* part, struct inode* inode, void* io_buf)
     inode_locate(part, inode_no, &inode_pos);
 
     struct inode pure_inode;
-    memcpy(&pure_inode, inode, sizeof(inode));
+    memcpy(&pure_inode, inode, sizeof(pure_inode));
 
     /* 一下三个属性用在内存中 */
     pure_inode.i_open_cnts = 0;
@@ -78,14 +80,14 @@ void inode_sync(partition* part, struct inode* inode, void* io_buf)
        ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 2);
        
        /* 修改当前inode对应部分的内容 */
-       memcpy(inode_buf + inode_pos.off_size, &pure_inode, sizeof(inode));
+       memcpy(inode_buf + inode_pos.off_size, &pure_inode, sizeof(pure_inode));
 
        ide_write(part->my_disk, inode_pos.sec_lba, inode_buf, 2);
     }
     else
     {
         ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 1);
-        memcpy(inode_buf + inode_pos.off_size, &pure_inode, sizeof(inode));
+        memcpy(inode_buf + inode_pos.off_size, &pure_inode, sizeof(pure_inode));
 
         /* 读出来，拼接后重新写入硬盘 */
         ide_write(part->my_disk, inode_pos.sec_lba, inode_buf, 1);
@@ -155,6 +157,7 @@ void inode_close(struct inode* inode)
     intr_status old_status = intr_disable();
     if(--inode->i_open_cnts == 0)
     {
+        printk("close inode \n");
         list_remove(&inode->inode_tag);
         /* inode open时为inode分配了内核空间，释放的时候应该释放此空间 */
         task_struct* cur = get_running_thread_pcb();
