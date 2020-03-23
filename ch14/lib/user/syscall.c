@@ -55,9 +55,9 @@ uint32_t getpid()
 }
 
 /* 写屏幕或者文件  */
-uint32_t write(char* str)
+uint32_t write(uint32_t fd, const void* buf, uint32_t count)
 {
-    return _syscall1(SYS_WRITE, str);
+    return _syscall3(SYS_WRITE, fd, buf, count);
 }
 
 void* malloc(uint32_t size)
