@@ -368,7 +368,7 @@ int32_t path_depth_cnt(char* pathname)
 /* 搜索文件pathnode，找到后返回inode号 */
 static int search_file(const char* pathname, path_search_record* searched_record)
 {   
-    printk("search file\n");
+   //  printk("search file\n");
 
     /* 如果查找的是根目录 */
     if(!strcmp(pathname, "/") ||
@@ -460,9 +460,9 @@ static int search_file(const char* pathname, path_search_record* searched_record
 /* 打开或者创建文件成功后，返回文件描述符，否则返回-1 */
 int32_t sys_open(const char* pathname, uint8_t flags)
 {
-    printk("sys_open \n");
+   // printk("sys_open \n");
     
-    printk("%s\n", pathname);
+   // printk("%s\n", pathname);
 
     /* 此处只是打开文件 */
     if(pathname[strlen(pathname) - 1] == '/')
@@ -483,12 +483,12 @@ int32_t sys_open(const char* pathname, uint8_t flags)
     /* 记录目录的深度，帮助判断中间某个目录是否不存在 */
     uint32_t pathname_depth = path_depth_cnt((char*)pathname);
     
-    printk("pathname_depth %d\n", pathname_depth);
+    // printk("pathname_depth %d\n", pathname_depth);
     
     /* 先检索文件是否存在 */
     int inode_no = search_file(pathname, &searched_record);
     
-    printk("inode no %d\n", inode_no);
+    //printk("inode no %d\n", inode_no);
 
     bool found = inode_no != -1 ? true : false;
     
@@ -502,7 +502,7 @@ int32_t sys_open(const char* pathname, uint8_t flags)
     uint32_t path_searched_depth = 
         path_depth_cnt(searched_record.searched_path);
     
-    printk("path searched depth %d\n", path_searched_depth);
+    //printk("path searched depth %d\n", path_searched_depth);
 
     /* 先判断是否把pathname的各层目录都访问到了 */
     if(pathname_depth != path_searched_depth)
@@ -573,6 +573,7 @@ int32_t sys_close(int32_t fd)
  */
 int32_t sys_write(int32_t fd, const void* buf, uint32_t count)
 {
+   // printk("sys_write fd %d\n", fd);
     if(fd < 0)
     {
         printk("sys_write: fd error");
@@ -597,6 +598,20 @@ int32_t sys_write(int32_t fd, const void* buf, uint32_t count)
     }
 }
 
+/* 从文件描述符fd指向的文件中读取count个字节到buf,
+成功返回读取的字节数，失败则返回-1
+ */
+int32_t sys_read(int32_t fd, void* buf, uint32_t count)
+{
+    if(fd < 0)
+    {
+        printk("sys_read: fd error \n");
+        return -1;
+    }
+    ASSERT(buf != NULL);
+    uint32_t _fd = fd_local2global(fd);
+    return file_read(&file_table[_fd], buf, count);
+}
 
 
 

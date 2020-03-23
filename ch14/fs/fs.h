@@ -68,4 +68,9 @@ int32_t sys_close(int32_t fd);
 
 int32_t sys_write(int32_t fd, const void* buf, uint32_t count);
 
+/* 从文件描述符fd指向的文件中读取count个字节到buf,
+成功返回读取的字节数，失败则返回-1
+ */
+int32_t sys_read(int32_t fd, void* buf, uint32_t count);
+
 #endif
