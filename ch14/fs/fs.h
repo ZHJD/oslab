@@ -66,4 +66,6 @@ int32_t sys_open(const char* pathname, uint8_t flags);
 /* 关闭文件描述符fd指向的文件，成功返回0,失败返回-1 */
 int32_t sys_close(int32_t fd);
 
+int32_t sys_write(int32_t fd, const void* buf, uint32_t count);
+
 #endif

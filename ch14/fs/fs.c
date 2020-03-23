@@ -5,7 +5,7 @@
 #include "debug.h"
 #include "dir.h"
 #include "file.h"
-
+#include "console.h"
 
 struct partition* cur_part;
 
@@ -566,6 +566,35 @@ int32_t sys_close(int32_t fd)
         get_running_thread_pcb()->fd_table[fd] = -1;
     }
     return ret;
+}
+
+/* 将buf中连续count个字节写入文件描述符fd, 
+成功则返回写入的字节数，失败返回-1
+ */
+int32_t sys_write(int32_t fd, const void* buf, uint32_t count)
+{
+    if(fd < 0)
+    {
+        printk("sys_write: fd error");
+        return -1;
+    }
+    if(fd == stdout_no)
+    {
+        console_put_str((char*)buf);
+        return count;
+    }
+    uint32_t _fd = fd_local2global(fd);
+    struct file* wr_file = &file_table[_fd];
+    if(wr_file->fd_flag & O_WRONLY || wr_file->fd_flag & O_RDWR)
+    {
+        uint32_t bytes_written = file_write(wr_file, buf, count);
+        return bytes_written;
+    }
+    else
+    {
+        printk("sys_write not allowed to write file read only");
+        return -1;
+    }
 }
 
 
