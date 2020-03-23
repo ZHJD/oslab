@@ -100,7 +100,7 @@ uint32_t printf(const char* format, ...)
     va_end(args);
 
     /* 返回写入字符串的长度 */
-    return write(buf);
+    return write(1, buf, strlen(buf));
 }
 
 /* 各种类型转换为char*  */
