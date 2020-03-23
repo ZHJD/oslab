@@ -1,8 +1,10 @@
 #ifndef __FS_DIR_H
-#define __FS_DIR_H 
+#define __FS_DIR_H
+#include "fs.h"
 #include "stdint.h"
 #include "inode.h"
-#include "fs.h"
+#include "ide.h"
+
 
 /* 最大文件名长度 */
 #define MAX_FILE_NAME_LEN  16
@@ -19,8 +21,6 @@ struct dir
     /* 目录的数据缓存 */
     uint8_t dir_buf[512];
 };
-
-struct dir dir;
 
 extern struct dir root_dir;
 

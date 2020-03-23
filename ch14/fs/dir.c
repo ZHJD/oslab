@@ -1,5 +1,4 @@
 #include "dir.h"
-#include "ide.h"
 #include "file.h"
 #include "debug.h"
 #include "string.h"
