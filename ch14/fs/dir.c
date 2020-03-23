@@ -32,7 +32,7 @@ void open_root_dir(partition* part)
                       const char* name, struct dir_entry* dir_e)
  {
 
-    printk("search_dir_entry\n");
+   // printk("search_dir_entry\n");
 
     /* 12个直接块，128个一级间接块 = 140块 */
      uint32_t block_cnt = 140;
@@ -40,7 +40,7 @@ void open_root_dir(partition* part)
     /* 12 * 4 + 512 共这么多的扇区号 */
     uint32_t* all_blocks = (uint32_t*)sys_malloc(48 + 512);
     
-    printk("all_blocks address 0x%x\n", all_blocks);
+    // printk("all_blocks address 0x%x\n", all_blocks);
 
     if(all_blocks == NULL)
     {
@@ -71,7 +71,7 @@ void open_root_dir(partition* part)
     /* 一个扇区内容纳的目录项个数 */
     uint32_t dir_entry_cnt = SECTOR_SIZE / dir_entry_size;
    
-    printk("block idx\n"); 
+    // printk("block idx\n"); 
 
     block_idx = 0;
     /* 开始在所有块中查找目录项 */
@@ -111,7 +111,7 @@ void open_root_dir(partition* part)
     sys_free(buf);
     sys_free(all_blocks);
 
-    printk("search dir done!\n");
+   //  printk("search dir done!\n");
     return false;
  }
 
@@ -235,7 +235,7 @@ bool sync_dir_entry(struct dir* parent_dir, struct dir_entry* p_de, void* io_buf
         }
         block_idx++;
     }
-    printk("directory is full\n");
+    // printk("directory is full\n");
     return false;
 }   
 
