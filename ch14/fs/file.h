@@ -72,5 +72,6 @@ int32_t file_create(struct dir* parent_dir, char* filename, uint8_t flag);
 返回文件描述符，否则返回-1 */
 int32_t file_open(uint32_t inode_no, uint8_t flag);
 
-
+/* 关闭文件 */
+int32_t file_close(struct file* file);
 #endif

@@ -4,6 +4,7 @@
 #include "ide.h"
 #include "fs.h"
 #include "string.h"
+#include "debug.h"
 
 /* 文件表 */
 struct file file_table[MAX_FILE_OPEN];
@@ -239,9 +240,20 @@ int32_t file_open(uint32_t inode_no, uint8_t flag)
     return pcb_fd_install(fd_idx);
 }
 
+/* 关闭文件 */
+int32_t file_close(struct file* file)
+{
+    if(file == NULL)
+    {
+        return -1;
+    }
+    /* 始文件结构可用 */
+    file->fd_inode->write_deny = false;
+    inode_close(file->fd_inode);
+    file->fd_inode = NULL;
 
-
-
+    return 0;
+}
 
 
 
