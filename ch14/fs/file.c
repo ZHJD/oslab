@@ -263,8 +263,9 @@ int32_t file_write(struct file* file, const void* buf, uint32_t count)
         printk("exceed max file size, write file failed \n");
         return -1;
     }
-
-    uint8_t* io_buf = (uint8_t*)sys_malloc(BLOCK_SIZE);
+    
+    /* inode 可能跨扇区 */
+    uint8_t* io_buf = (uint8_t*)sys_malloc(BLOCK_SIZE * 2);
     if(io_buf == NULL)
     {
         printk("file write failed!, sys_malloc for io_buf failed!\n");
@@ -497,6 +498,8 @@ int32_t file_write(struct file* file, const void* buf, uint32_t count)
         bytes_written += chunk_size;
         size_left += chunk_size;
     }
+    
+    printk("file write inode i_size %d \n", file->fd_inode->i_size);
 
     inode_sync(cur_part, file->fd_inode, io_buf);
     sys_free(all_blocks);
@@ -516,6 +519,7 @@ int32_t file_read(struct file* file, void* buf, uint32_t count)
     /* 若要读取的字节数超过了文件可读的剩余量, 能用剩余量作为待读取的字节数 */
     if((file->fd_pos + count) > file->fd_inode->i_size)
     {
+        printk("file_read : %d file size %d.\n",  file->fd_pos, file->fd_inode->i_size);
         size = file->fd_inode->i_size - file->fd_pos;
         size_left = size;
         if(size == 0) // 若文件为空，则返回-1
