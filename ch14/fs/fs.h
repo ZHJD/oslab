@@ -3,6 +3,8 @@
 #include "ide.h"
 #include "stdint.h"
 
+
+
 /* 系统可打开的最大文件数 */
 #define MAX_FILE_OPEN 32
 
@@ -60,5 +62,8 @@ void filesys_init();
 
 /* 打开或者创建文件成功后，返回文件描述符，否则返回-1 */
 int32_t sys_open(const char* pathname, uint8_t flags);
+
+/* 关闭文件描述符fd指向的文件，成功返回0,失败返回-1 */
+int32_t sys_close(int32_t fd);
 
 #endif
