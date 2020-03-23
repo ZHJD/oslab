@@ -99,11 +99,12 @@ $(BUILD_DIR)/fs.o: fs/fs.c
 $(BUILD_DIR)/inode.o: fs/inode.c
 	$(CC) $(CFLAGS) $< -o $@
 
+$(BUILD_DIR)/dir.o: fs/dir.c
+	$(CC) $(CFLAGS) $< -o $@
+
 $(BUILD_DIR)/file.o: fs/file.c
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/dir.o: fs/dir.c
-	$(CC) $(CFLAGS) $< -o $@
 
 #################   汇编代码编译  ######################################
 $(BUILD_DIR)/kernel.o: kernel/kernel.S
