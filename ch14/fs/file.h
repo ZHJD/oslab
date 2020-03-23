@@ -77,4 +77,9 @@ int32_t file_close(struct file* file);
 
 /* 把buf中的count个字节写入file，成功则返回写入的字节数，失败返回-1 */
 int32_t file_write(struct file* file, const void* buf, uint32_t count);
+
+/* 从文件中读取count个字节写入buf中，返回读出的字节数， 
+   若到文件结束，则返回-1
+ */
+int32_t file_read(struct file* file, void* buf, uint32_t count);
 #endif
