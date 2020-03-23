@@ -3,6 +3,8 @@
 #include "thread.h"
 #include "console.h"
 #include "string.h"
+#include "fs.h"
+
 
 /* 中断个数 */
 #define syscall_nr 32
@@ -16,13 +18,6 @@ syscall syscall_table[syscall_nr];
 uint32_t sys_getpid(void)
 {
     return get_running_thread_pcb()->pid;
-}
-
-/* 打印字符串str(未实现文件系统) */
-uint32_t sys_write(char* str)
-{
-    console_put_str(str);
-    return strlen(str);
 }
 
 /* 初始化系统调用表 */
